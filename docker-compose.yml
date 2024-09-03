@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Password
+      POSTGRES_DB: todo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  webapi:
+    build: ./
+    container_name: app
+    depends_on:
+      - postgres
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__TodoContext=Host=postgres;Port=5432;Database=todo_db;Username=postgres;Password=Password
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_USER=postgres
+      - DB_PASSWORD=Password
+      - DB_NAME=todo_db
+      - DB_HOST=postgres
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:
+
