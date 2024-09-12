@@ -18,8 +18,17 @@ if (builder.Environment.IsProduction())
 }
 
 
-builder.Services.AddSingleton<BookRepository>();
-builder.Services.AddSingleton<BookService>();
+builder.Services.AddSingleton<AccountRepository>();
+builder.Services.AddSingleton<AccountService>();
+builder.Services.AddSingleton<CustomerReviewRepository>();
+builder.Services.AddSingleton<CustomerReviewService>();
+builder.Services.AddSingleton<InvoiceRepository>();
+builder.Services.AddSingleton<InvoiceService>();
+builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<InvoiceDetailRepository>();
+builder.Services.AddSingleton<InvoiceDetailService>();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
