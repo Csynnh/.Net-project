@@ -19,17 +19,17 @@ public class AccountController : ControllerBase
         _accountService = accountService;
     }
 
-    [HttpGet]
-    [Route("/api/accounts")]
-    public ResponseDto Get()
-    {
-        HttpContext.Response.StatusCode = 314;
-        return new ResponseDto()
-        {
-            MessageToClient = "Successfully fetched",
-            ResponseData = _accountService.GetAccounts()
-        };
-    }
+    // [HttpGet]
+    // [Route("/api/accounts")]
+    // public ResponseDto Get()
+    // {
+    //     HttpContext.Response.StatusCode = 314;
+    //     return new ResponseDto()
+    //     {
+    //         MessageToClient = "Successfully fetched",
+    //         ResponseData = _accountService.GetAccounts()
+    //     };
+    // }
 
     [HttpPost]
     [ValidateModel]
@@ -44,18 +44,18 @@ public class AccountController : ControllerBase
         };
     }
 
-    [HttpPut]
-    [ValidateModel]
-    [Route("/api/accounts/{id}")]
-    public ResponseDto Put([FromRoute] int id, [FromBody] UpdateAccountRequestDto dto)
-    {
-        HttpContext.Response.StatusCode = 201;
-        return new ResponseDto()
-        {
-            MessageToClient = "Successfully updated",
-            ResponseData = _accountService.UpdateAccount(id, dto.TenDangNhap, dto.MatKhau, dto.HoTen, dto.Email, dto.SoDienThoai, dto.DiaChi, dto.VaiTro)
-        };
-    }
+    // [HttpPut]
+    // [ValidateModel]
+    // [Route("/api/accounts/{id}")]
+    // public ResponseDto Put([FromRoute] int id, [FromBody] UpdateAccountRequestDto dto)
+    // {
+    //     HttpContext.Response.StatusCode = 201;
+    //     return new ResponseDto()
+    //     {
+    //         MessageToClient = "Successfully updated",
+    //         ResponseData = _accountService.UpdateAccount(id, dto.TenDangNhap, dto.MatKhau, dto.HoTen, dto.Email, dto.SoDienThoai, dto.DiaChi, dto.VaiTro)
+    //     };
+    // }
 
     [HttpDelete]
     [Route("/api/accounts/{id}")]
