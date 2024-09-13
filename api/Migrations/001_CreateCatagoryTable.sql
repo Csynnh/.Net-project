@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS library_app.Category (
+    Id SERIAL PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL
+);
