@@ -42,13 +42,13 @@ var app = builder.Build();
 
 
 // Run migrations
-var connectionString = Utilities.ProperlyFormattedConnectionString;
-if (connectionString is not null) {
-    Console.WriteLine(connectionString);
-    var migrationRunner = app.Services.GetRequiredService<MigrationRunner>();
-    await migrationRunner.ApplyMigrationsAsync();
+// var connectionString = Utilities.ProperlyFormattedConnectionString;
+// if (connectionString is not null) {
+//     Console.WriteLine(connectionString);
+//     var migrationRunner = app.Services.GetRequiredService<MigrationRunner>();
+//     await migrationRunner.ApplyMigrationsAsync();
 
-}
+// }
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

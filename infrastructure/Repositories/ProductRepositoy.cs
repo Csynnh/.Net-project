@@ -17,12 +17,12 @@ public class ProductRepository
     public IEnumerable<Product> GetProducts()
     {
         string sql = $@"
-SELECT id_hanghoa as {nameof(Product.ID_HangHoa)},
-       tenhanghoa as {nameof(Product.TenHangHoa)},
-       mota as {nameof(Product.MoTa)},
-       gia as {nameof(Product.Gia)},
-       soluongtonkho as {nameof(Product.SoLuongTonKho)},
-       hinhanh as {nameof(Product.HinhAnh)}
+SELECT id  as {nameof(Product.id )},
+       name as {nameof(Product.name)},
+       desc as {nameof(Product.desc)},
+       price as {nameof(Product.price)},
+       inventory as {nameof(Product.inventory)},
+       image_url as {nameof(Product.image_url)}
 FROM products;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -31,58 +31,58 @@ FROM products;
         }
     }
 
-    public Product CreateProduct(string tenHangHoa, string moTa, decimal gia, int soLuongTonKho, string hinhAnh)
+    public Product CreateProduct(string name, string desc, decimal price, int inventory, string image_url)
     {
         var sql = $@"
-INSERT INTO products (tenhanghoa, mota, gia, soluongtonkho, hinhanh) 
-VALUES (@tenHangHoa, @moTa, @gia, @soLuongTonKho, @hinhAnh)
-RETURNING id_hanghoa as {nameof(Product.ID_HangHoa)},
-          tenhanghoa as {nameof(Product.TenHangHoa)},
-          mota as {nameof(Product.MoTa)},
-          gia as {nameof(Product.Gia)},
-          soluongtonkho as {nameof(Product.SoLuongTonKho)},
-          hinhanh as {nameof(Product.HinhAnh)};
+INSERT INTO products (name, desc, price, inventory, image_url) 
+VALUES (@name, @desc, @price, @inventory, @image_url)
+RETURNING id  as {nameof(Product.id )},
+          name as {nameof(Product.name)},
+          desc as {nameof(Product.desc)},
+          price as {nameof(Product.price)},
+          inventory as {nameof(Product.inventory)},
+          image_url as {nameof(Product.image_url)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Product>(sql, new { tenHangHoa, moTa, gia, soLuongTonKho, hinhAnh });
+            return conn.QueryFirst<Product>(sql, new { name, desc, price, inventory, image_url });
         }
     }
 
-    public Product UpdateProduct(int idHangHoa, string tenHangHoa, string moTa, decimal gia, int soLuongTonKho, string hinhAnh)
+    public Product UpdateProduct(int id, string name, string desc, decimal price, int inventory, string image_url)
     {
         var sql = $@"
 UPDATE products 
-SET tenhanghoa = @tenHangHoa, mota = @moTa, gia = @gia, soluongtonkho = @soLuongTonKho, hinhanh = @hinhAnh
-WHERE id_hanghoa = @idHangHoa
-RETURNING id_hanghoa as {nameof(Product.ID_HangHoa)},
-          tenhanghoa as {nameof(Product.TenHangHoa)},
-          mota as {nameof(Product.MoTa)},
-          gia as {nameof(Product.Gia)},
-          soluongtonkho as {nameof(Product.SoLuongTonKho)},
-          hinhanh as {nameof(Product.HinhAnh)};
+SET name = @name, desc = @desc, price = @price, inventory = @inventory, image_url = @image_url
+WHERE id  = @id
+RETURNING id  as {nameof(Product.id )},
+          name as {nameof(Product.name)},
+          desc as {nameof(Product.desc)},
+          price as {nameof(Product.price)},
+          inventory as {nameof(Product.inventory)},
+          image_url as {nameof(Product.image_url)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Product>(sql, new { idHangHoa, tenHangHoa, moTa, gia, soLuongTonKho, hinhAnh });
+            return conn.QueryFirst<Product>(sql, new { id, name, desc, price, inventory, image_url });
         }
     }
 
-    public bool DeleteProduct(int idHangHoa)
+    public bool DeleteProduct(int id)
     {
-        var sql = @"DELETE FROM products WHERE id_hanghoa = @idHangHoa;";
+        var sql = @"DELETE FROM products WHERE id  = @id;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Execute(sql, new { idHangHoa }) == 1;
+            return conn.Execute(sql, new { id }) == 1;
         }
     }
 
-    public bool DoesProductWithNameExist(string tenHangHoa)
+    public bool DoesProductWithNameExist(string name)
     {
-        var sql = @"SELECT COUNT(*) FROM products WHERE tenhanghoa = @tenHangHoa;";
+        var sql = @"SELECT COUNT(*) FROM products WHERE name = @name;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.ExecuteScalar<int>(sql, new { tenHangHoa }) == 1;
+            return conn.ExecuteScalar<int>(sql, new { name }) == 1;
         }
     }
 }

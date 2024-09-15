@@ -19,25 +19,25 @@ public class AccountService
         return _accountRepository.GetAccounts();
     }
 
-    public Account CreateAccount(string tenDangNhap, string matKhau, string hoTen, string email, string soDienThoai, string diaChi, string vaiTro)
+    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string address , string role )
     {
-        var doesAccountExist = _accountRepository.DoesAccountWithUsernameExist(tenDangNhap);
+        var doesAccountExist = _accountRepository.DoesAccountWithUsernameExist(username );
         if (doesAccountExist)
         {
-            throw new ValidationException("Account already exists with username " + tenDangNhap);
+            throw new ValidationException("Account already exists with username " + username );
         }
 
-        return _accountRepository.CreateAccount(tenDangNhap, matKhau, hoTen, email, soDienThoai, diaChi, vaiTro);
+        return _accountRepository.CreateAccount(username , password , name, email, phone_number, address , role );
     }
 
-    public Account UpdateAccount(int idTaiKhoan, string tenDangNhap, string matKhau, string hoTen, string email, string soDienThoai, string diaChi, string vaiTro)
+    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number, string address , string role )
     {
-        return _accountRepository.UpdateAccount(idTaiKhoan, tenDangNhap, matKhau, hoTen, email, soDienThoai, diaChi, vaiTro);
+        return _accountRepository.UpdateAccount(id, username , password , name, email, phone_number, address , role );
     }
 
-    public void DeleteAccount(int idTaiKhoan)
+    public void DeleteAccount(int id)
     {
-        var result = _accountRepository.DeleteAccount(idTaiKhoan);
+        var result = _accountRepository.DeleteAccount(id);
         if (!result)
         {
             throw new Exception("Could not delete account");

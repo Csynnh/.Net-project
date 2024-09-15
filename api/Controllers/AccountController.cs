@@ -40,7 +40,7 @@ public class AccountController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an account",
-            ResponseData = _accountService.CreateAccount(dto.TenDangNhap, dto.MatKhau, dto.HoTen, dto.Email, dto.SoDienThoai, dto.DiaChi, dto.VaiTro)
+            ResponseData = _accountService.CreateAccount(dto.username , dto.password , dto.name, dto.email, dto.phone_number, dto.address , dto.role )
         };
     }
 
@@ -53,7 +53,7 @@ public class AccountController : ControllerBase
     //     return new ResponseDto()
     //     {
     //         MessageToClient = "Successfully updated",
-    //         ResponseData = _accountService.UpdateAccount(id, dto.TenDangNhap, dto.MatKhau, dto.HoTen, dto.Email, dto.SoDienThoai, dto.DiaChi, dto.VaiTro)
+    //         ResponseData = _accountService.UpdateAccount(id, dto.username , dto.password , dto.name, dto.email, dto.phone_number, dto.address , dto.role )
     //     };
     // }
 

@@ -17,14 +17,14 @@ public class AccountRepository
     public IEnumerable<Account> GetAccounts()
     {
         string sql = $@"
-SELECT id_taikhoan as {nameof(Account.ID_TaiKhoan)},
-       tendangnhap as {nameof(Account.TenDangNhap)},
-       matkhau as {nameof(Account.MatKhau)},
-       hoten as {nameof(Account.HoTen)},
-       email as {nameof(Account.Email)},
-       sodienthoai as {nameof(Account.SoDienThoai)},
-       diachi as {nameof(Account.DiaChi)},
-       vaitro as {nameof(Account.VaiTro)}
+SELECT id as {nameof(Account.id)},
+       username  as {nameof(Account.username )},
+       password  as {nameof(Account.password )},
+       name as {nameof(Account.name)},
+       email as {nameof(Account.email)},
+       phone_number as {nameof(Account.phone_number)},
+       address  as {nameof(Account.address )},
+       role  as {nameof(Account.role )}
 FROM accounts;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -33,62 +33,62 @@ FROM accounts;
         }
     }
 
-    public Account CreateAccount(string tenDangNhap, string matKhau, string hoTen, string email, string soDienThoai, string diaChi, string vaiTro)
+    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string address , string role )
     {
         var sql = $@"
-INSERT INTO accounts (tendangnhap, matkhau, hoten, email, sodienthoai, diachi, vaitro) 
-VALUES (@tenDangNhap, @matKhau, @hoTen, @email, @soDienThoai, @diaChi, @vaiTro)
-RETURNING id_taikhoan as {nameof(Account.ID_TaiKhoan)},
-          tendangnhap as {nameof(Account.TenDangNhap)},
-          matkhau as {nameof(Account.MatKhau)},
-          hoten as {nameof(Account.HoTen)},
-          email as {nameof(Account.Email)},
-          sodienthoai as {nameof(Account.SoDienThoai)},
-          diachi as {nameof(Account.DiaChi)},
-          vaitro as {nameof(Account.VaiTro)};
+INSERT INTO accounts (username , password , name, email, phone_number, address , role ) 
+VALUES (@username , @password , @name, @email, @phone_number, @address , @role )
+RETURNING id as {nameof(Account.id)},
+          username  as {nameof(Account.username )},
+          password  as {nameof(Account.password )},
+          name as {nameof(Account.name)},
+          email as {nameof(Account.email)},
+          phone_number as {nameof(Account.phone_number)},
+          address  as {nameof(Account.address )},
+          role  as {nameof(Account.role )};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Account>(sql, new { tenDangNhap, matKhau, hoTen, email, soDienThoai, diaChi, vaiTro });
+            return conn.QueryFirst<Account>(sql, new { username , password , name, email, phone_number, address , role  });
         }
     }
 
-    public Account UpdateAccount(int idTaiKhoan, string tenDangNhap, string matKhau, string hoTen, string email, string soDienThoai, string diaChi, string vaiTro)
+    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number, string address , string role )
     {
         var sql = $@"
 UPDATE accounts 
-SET tendangnhap = @tenDangNhap, matkhau = @matKhau, hoten = @hoTen, email = @email, sodienthoai = @soDienThoai, diachi = @diaChi, vaitro = @vaiTro
-WHERE id_taikhoan = @idTaiKhoan
-RETURNING id_taikhoan as {nameof(Account.ID_TaiKhoan)},
-          tendangnhap as {nameof(Account.TenDangNhap)},
-          matkhau as {nameof(Account.MatKhau)},
-          hoten as {nameof(Account.HoTen)},
-          email as {nameof(Account.Email)},
-          sodienthoai as {nameof(Account.SoDienThoai)},
-          diachi as {nameof(Account.DiaChi)},
-          vaitro as {nameof(Account.VaiTro)};
+SET username  = @username , password  = @password , name = @name, email = @email, phone_number = @phone_number, address  = @address , role  = @role 
+WHERE id = @id
+RETURNING id as {nameof(Account.id)},
+          username  as {nameof(Account.username )},
+          password  as {nameof(Account.password )},
+          name as {nameof(Account.name)},
+          email as {nameof(Account.email)},
+          phone_number as {nameof(Account.phone_number)},
+          address  as {nameof(Account.address )},
+          role  as {nameof(Account.role )};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Account>(sql, new { idTaiKhoan, tenDangNhap, matKhau, hoTen, email, soDienThoai, diaChi, vaiTro });
+            return conn.QueryFirst<Account>(sql, new { id, username , password , name, email, phone_number, address , role  });
         }
     }
 
-    public bool DeleteAccount(int idTaiKhoan)
+    public bool DeleteAccount(int id)
     {
-        var sql = @"DELETE FROM accounts WHERE id_taikhoan = @idTaiKhoan;";
+        var sql = @"DELETE FROM accounts WHERE id = @id;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Execute(sql, new { idTaiKhoan }) == 1;
+            return conn.Execute(sql, new { id }) == 1;
         }
     }
 
-    public bool DoesAccountWithUsernameExist(string tenDangNhap)
+    public bool DoesAccountWithUsernameExist(string username )
     {
-        var sql = @"SELECT COUNT(*) FROM accounts WHERE tendangnhap = @tenDangNhap;";
+        var sql = @"SELECT COUNT(*) FROM accounts WHERE username  = @username ;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.ExecuteScalar<int>(sql, new { tenDangNhap }) == 1;
+            return conn.ExecuteScalar<int>(sql, new { username  }) == 1;
         }
     }
 }
