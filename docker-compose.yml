@@ -14,7 +14,10 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   webapi:
-    build: ./
+    build:
+      context: .
+      args:
+        MIGRATE_DB: ${MIGRATE_DB}
     container_name: app
     depends_on:
       - postgres
@@ -26,6 +29,7 @@ services:
       - DB_PASSWORD=Password
       - DB_NAME=todo_db
       - DB_HOST=postgres
+    command: ${MIGRATE_DB}
     ports:
       - "80:80"
 

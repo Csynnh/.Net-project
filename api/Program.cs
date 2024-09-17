@@ -57,7 +57,6 @@ if (args.Contains("--migrate-db"))
 
     // Exit after running migrations
     logger.LogInformation("Database migration completed.");
-    return;
 }
 
 // Configure the HTTP request pipeline.

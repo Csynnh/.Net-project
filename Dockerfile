@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y postgresql-client
 # Copy the build output from the previous stage
 COPY --from=build-env /app/out .
 
+# Copy the Migrations directory
+COPY api/Migrations /app/Migrations
+
 # Copy the entry script for database initialization
 COPY entrypoint.sh /app/entrypoint.sh
 
@@ -45,3 +48,6 @@ ENV pgconn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}
 
 # Set the entry point to use the initialization script and run the app
 ENTRYPOINT ["/app/entrypoint.sh", "dotnet", "api.dll"]
+
+# If MIGRATE_DB is set to '--migrate-db', pass it as an argument
+CMD ["${MIGRATE_DB}"]
