@@ -12,8 +12,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS noir.Feedback(
     id UUID PRIMARY KEY DEFAULT UUID_GENERATE_V4(),
-    account_id UUID REFERENCES noir.Account(id),
-    product_id UUID REFERENCES noir.Product(id),
+    account_id UUID REFERENCES noir.Accounts(id),
+    product_id UUID REFERENCES noir.Products(id),
     content TEXT,
     vote INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
