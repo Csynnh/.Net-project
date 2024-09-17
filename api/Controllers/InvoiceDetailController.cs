@@ -40,7 +40,7 @@ public class InvoiceDetailController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an invoice detail",
-            ResponseData = _invoiceDetailService.CreateInvoiceDetail(dto.ID_HoaDon, dto.ID_HangHoa, dto.SoLuong, dto.Gia)
+            ResponseData = _invoiceDetailService.CreateInvoiceDetail(dto.invoices_id , dto.product_id , dto.amount, dto.price)
         };
     }
 
@@ -53,15 +53,15 @@ public class InvoiceDetailController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _invoiceDetailService.UpdateInvoiceDetail(dto.ID_HoaDon, dto.ID_HangHoa, dto.SoLuong, dto.Gia)
+            ResponseData = _invoiceDetailService.UpdateInvoiceDetail(dto.invoices_id , dto.product_id , dto.amount, dto.price)
         };
     }
 
     [HttpDelete]
-    [Route("/api/invoicedetails/{idHoaDon}/{idHangHoa}")]
-    public ResponseDto Delete([FromRoute] int idHoaDon, [FromRoute] int idHangHoa)
+    [Route("/api/invoicedetails/{invoices_id }/{product_id}")]
+    public ResponseDto Delete([FromRoute] int invoices_id , [FromRoute] int product_id)
     {
-        _invoiceDetailService.DeleteInvoiceDetail(idHoaDon, idHangHoa);
+        _invoiceDetailService.DeleteInvoiceDetail(invoices_id , product_id);
         return new ResponseDto()
         {
             MessageToClient = "Successfully deleted"

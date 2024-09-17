@@ -5,8 +5,8 @@ namespace api.TransferModels;
 // UpdateInvoiceDetailRequestDto.cs
 public class UpdateInvoiceDetailRequestDto
 {
-    public int ID_HoaDon { get; set; }
-    public int ID_HangHoa { get; set; }
-    public int SoLuong { get; set; }
-    public decimal Gia { get; set; }
+    public int invoices_id  { get; set; }
+    public int product_id  { get; set; }
+    public int amount { get; set; }
+    public decimal price { get; set; }
 }

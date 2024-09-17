@@ -6,9 +6,9 @@ namespace api.TransferModels;
 // CreateInvoiceRequestDto.cs
 public class CreateInvoiceRequestDto
 {
-    public int ID_HoaDon { get; set; }  
-    public int ID_TaiKhoan { get; set; }  
-    public DateTime NgayXuatHoaDon { get; set; }  
-    public decimal TongTien { get; set; }  
-    public string TrangThai { get; set; } = "Đang xử lý";  
+    public int id  { get; set; }  
+    public int account_id  { get; set; }  
+    public DateTime created_date { get; set; }  
+    public decimal price { get; set; }  
+    public string status { get; set; } = "Đang xử lý";  
 }
