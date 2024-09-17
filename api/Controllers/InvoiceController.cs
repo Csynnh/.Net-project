@@ -23,7 +23,7 @@ public class InvoiceController : ControllerBase
     [Route("/api/invoices")]
     public ResponseDto Get()
     {
-        HttpContext.Response.StatusCode = 314;
+        HttpContext.Response.StatusCode = 200;
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
