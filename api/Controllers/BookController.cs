@@ -28,7 +28,7 @@ public class BookController : ControllerBase
     [Route("/api/books")]
     public ResponseDto Get()
     {
-        HttpContext.Response.StatusCode = 314;
+        HttpContext.Response.StatusCode = 200;
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",

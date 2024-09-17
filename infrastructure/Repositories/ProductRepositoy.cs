@@ -18,12 +18,12 @@ public class ProductRepository
     {
         string sql = $@"
 SELECT id  as {nameof(Product.id )},
-       name as {nameof(Product.name)},
-       desc as {nameof(Product.desc)},
+       prod_name as {nameof(Product.name)},
+       prod_desc as {nameof(Product.desc)},
        price as {nameof(Product.price)},
        inventory as {nameof(Product.inventory)},
        image_url as {nameof(Product.image_url)}
-FROM products;
+FROM noir.Products;
 ";
         using (var conn = _dataSource.OpenConnection())
         {

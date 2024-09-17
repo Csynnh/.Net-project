@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS noir.CustomerReviews(
     product_id UUID REFERENCES noir.Products(id),
     content TEXT,
     vote INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )

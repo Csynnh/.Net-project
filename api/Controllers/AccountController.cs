@@ -23,7 +23,7 @@ public class AccountController : ControllerBase
     // [Route("/api/accounts")]
     // public ResponseDto Get()
     // {
-    //     HttpContext.Response.StatusCode = 314;
+    //     HttpContext.Response.StatusCode = 200;
     //     return new ResponseDto()
     //     {
     //         MessageToClient = "Successfully fetched",

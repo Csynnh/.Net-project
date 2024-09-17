@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS noir.Invoices (
     account_id UUID NOT NULL REFERENCES noir.Accounts(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total NUMERIC(10, 2) NOT NULL,
-    status INT NOT NULL,
+    status INT NOT NULL
 );

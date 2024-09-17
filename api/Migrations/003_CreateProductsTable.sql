@@ -6,5 +6,5 @@ CREATE TABLE IF NOT EXISTS noir.Products  (
     prod_desc TEXT,
     price INT NOT NULL,
     inventory INT NOT NULL,
-    image_url TEXT,
+    image_url TEXT
 );
