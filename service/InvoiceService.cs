@@ -19,19 +19,19 @@ public class InvoiceService
         return _invoiceRepository.GetInvoices();
     }
 
-    public Invoice CreateInvoice(int idTaiKhoan, DateTime ngayXuatHoaDon, decimal tongTien, string trangThai)
+    public Invoice CreateInvoice(int account_id, DateTime created_date, decimal price, string status)
     {
-        return _invoiceRepository.CreateInvoice(idTaiKhoan, ngayXuatHoaDon, tongTien, trangThai);
+        return _invoiceRepository.CreateInvoice(account_id, created_date, price, status);
     }
 
-    public Invoice UpdateInvoice(int idHoaDon, int idTaiKhoan, DateTime ngayXuatHoaDon, decimal tongTien, string trangThai)
+    public Invoice UpdateInvoice(int id , int account_id, DateTime created_date, decimal price, string status)
     {
-        return _invoiceRepository.UpdateInvoice(idHoaDon, idTaiKhoan, ngayXuatHoaDon, tongTien, trangThai);
+        return _invoiceRepository.UpdateInvoice(id , account_id, created_date, price, status);
     }
 
-    public void DeleteInvoice(int idHoaDon)
+    public void DeleteInvoice(int id )
     {
-        var result = _invoiceRepository.DeleteInvoice(idHoaDon);
+        var result = _invoiceRepository.DeleteInvoice(id );
         if (!result)
         {
             throw new Exception("Could not delete invoice");

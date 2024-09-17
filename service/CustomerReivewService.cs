@@ -19,19 +19,19 @@ public class CustomerReviewService
         return _customerReviewRepository.GetCustomerReviews();
     }
 
-    public CustomerReview CreateCustomerReview(int idTaiKhoan, int idHangHoa, string noiDung, int danhGia, DateTime ngayNhanXet)
+    public CustomerReview CreateCustomerReview(int account_id, int product_id, string content, int vote, DateTime created_date)
     {
-        return _customerReviewRepository.CreateCustomerReview(idTaiKhoan, idHangHoa, noiDung, danhGia, ngayNhanXet);
+        return _customerReviewRepository.CreateCustomerReview(account_id, product_id, content, vote, created_date);
     }
 
-    public CustomerReview UpdateCustomerReview(int idNhanXet, int idTaiKhoan, int idHangHoa, string noiDung, int danhGia, DateTime ngayNhanXet)
+    public CustomerReview UpdateCustomerReview(int id, int account_id, int product_id, string content, int vote, DateTime created_date)
     {
-        return _customerReviewRepository.UpdateCustomerReview(idNhanXet, idTaiKhoan, idHangHoa, noiDung, danhGia, ngayNhanXet);
+        return _customerReviewRepository.UpdateCustomerReview(id, account_id, product_id, content, vote, created_date);
     }
 
-    public void DeleteCustomerReview(int idNhanXet)
+    public void DeleteCustomerReview(int id)
     {
-        var result = _customerReviewRepository.DeleteCustomerReview(idNhanXet);
+        var result = _customerReviewRepository.DeleteCustomerReview(id);
         if (!result)
         {
             throw new Exception("Could not delete customer review");

@@ -40,7 +40,7 @@ public class ProductController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully created a product",
-            ResponseData = _productService.CreateProduct(dto.TenHangHoa, dto.MoTa, dto.Gia, dto.SoLuongTonKho, dto.HinhAnh)
+            ResponseData = _productService.CreateProduct(dto.name, dto.desc, dto.price, dto.inventory, dto.image_url)
         };
     }
 
@@ -53,7 +53,7 @@ public class ProductController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _productService.UpdateProduct(id, dto.TenHangHoa, dto.MoTa, dto.Gia, dto.SoLuongTonKho, dto.HinhAnh)
+            ResponseData = _productService.UpdateProduct(id, dto.name, dto.desc, dto.price, dto.inventory, dto.image_url)
         };
     }
 

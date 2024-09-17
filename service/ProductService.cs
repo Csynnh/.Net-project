@@ -19,19 +19,19 @@ public class ProductService
         return _productRepository.GetProducts();
     }
 
-    public Product CreateProduct(string tenHangHoa, string moTa, decimal gia, int soLuongTonKho, string hinhAnh)
+    public Product CreateProduct(string name, string desc, decimal price, int inventory, string image_url)
     {
-        return _productRepository.CreateProduct(tenHangHoa, moTa, gia, soLuongTonKho, hinhAnh);
+        return _productRepository.CreateProduct(name, desc, price, inventory, image_url);
     }
 
-    public Product UpdateProduct(int idHangHoa, string tenHangHoa, string moTa, decimal gia, int soLuongTonKho, string hinhAnh)
+    public Product UpdateProduct(int id, string name, string desc, decimal price, int inventory, string image_url)
     {
-        return _productRepository.UpdateProduct(idHangHoa, tenHangHoa, moTa, gia, soLuongTonKho, hinhAnh);
+        return _productRepository.UpdateProduct(id, name, desc, price, inventory, image_url);
     }
 
-    public void DeleteProduct(int idHangHoa)
+    public void DeleteProduct(int id)
     {
-        var result = _productRepository.DeleteProduct(idHangHoa);
+        var result = _productRepository.DeleteProduct(id);
         if (!result)
         {
             throw new Exception("Could not delete product");

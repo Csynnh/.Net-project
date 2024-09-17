@@ -19,19 +19,19 @@ public class InvoiceDetailService
         return _invoiceDetailRepository.GetInvoiceDetails();
     }
 
-    public InvoiceDetail CreateInvoiceDetail(int idHoaDon, int idHangHoa, int soLuong, decimal gia)
+    public InvoiceDetail CreateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
     {
-        return _invoiceDetailRepository.CreateInvoiceDetail(idHoaDon, idHangHoa, soLuong, gia);
+        return _invoiceDetailRepository.CreateInvoiceDetail(invoices_id , product_id, amount, price);
     }
 
-    public InvoiceDetail UpdateInvoiceDetail(int idHoaDon, int idHangHoa, int soLuong, decimal gia)
+    public InvoiceDetail UpdateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
     {
-        return _invoiceDetailRepository.UpdateInvoiceDetail(idHoaDon, idHangHoa, soLuong, gia);
+        return _invoiceDetailRepository.UpdateInvoiceDetail(invoices_id , product_id, amount, price);
     }
 
-    public void DeleteInvoiceDetail(int idHoaDon, int idHangHoa)
+    public void DeleteInvoiceDetail(int invoices_id , int product_id)
     {
-        var result = _invoiceDetailRepository.DeleteInvoiceDetail(idHoaDon, idHangHoa);
+        var result = _invoiceDetailRepository.DeleteInvoiceDetail(invoices_id , product_id);
         if (!result)
         {
             throw new Exception("Could not delete invoice detail");
