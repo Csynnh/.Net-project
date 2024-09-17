@@ -18,9 +18,19 @@ if (builder.Environment.IsProduction())
     builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString);
 }
 
-
 builder.Services.AddSingleton<BookRepository>();
 builder.Services.AddSingleton<BookService>();
+builder.Services.AddSingleton<AccountRepository>();
+builder.Services.AddSingleton<AccountService>();
+builder.Services.AddSingleton<CustomerReviewRepository>();
+builder.Services.AddSingleton<CustomerReviewService>();
+builder.Services.AddSingleton<InvoiceRepository>();
+builder.Services.AddSingleton<InvoiceService>();
+builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<InvoiceDetailRepository>();
+builder.Services.AddSingleton<InvoiceDetailService>();
+
 builder.Services.AddSingleton<MigrationRunner>();
 
 builder.Services.AddControllers();
@@ -29,15 +39,25 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 
-// Run migrations
-var connectionString = Utilities.ProperlyFormattedConnectionString;
-if (connectionString is not null) {
-    Console.WriteLine(connectionString);
-    var migrationRunner = app.Services.GetRequiredService<MigrationRunner>();
-    await migrationRunner.ApplyMigrationsAsync();
+// Check for the --migrate-db argument
+if (args.Contains("--migrate-db"))
+{
+    // Run migrations
+    logger.LogInformation("Starting database migration...");
+    var connectionString = Utilities.ProperlyFormattedConnectionString;
+    if (connectionString is not null)
+    {
+        Console.WriteLine(connectionString);
+        var migrationRunner = app.Services.GetRequiredService<MigrationRunner>();
+        await migrationRunner.ApplyMigrationsAsync();
+    }
 
+    // Exit after running migrations
+    logger.LogInformation("Database migration completed.");
+    return;
 }
 
 // Configure the HTTP request pipeline.
