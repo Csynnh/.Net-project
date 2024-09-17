@@ -17,10 +17,10 @@ public class InvoiceDetailRepository
     public IEnumerable<InvoiceDetail> GetInvoiceDetails()
     {
         string sql = $@"
-SELECT id_hoadon as {nameof(InvoiceDetail.ID_HoaDon)},
-       id_hanghoa as {nameof(InvoiceDetail.ID_HangHoa)},
-       soluong as {nameof(InvoiceDetail.SoLuong)},
-       gia as {nameof(InvoiceDetail.Gia)}
+SELECT invoices_id  as {nameof(InvoiceDetail.invoices_id )},
+       product_id  as {nameof(InvoiceDetail.product_id )},
+       amount as {nameof(InvoiceDetail.amount)},
+       price as {nameof(InvoiceDetail.price)}
 FROM invoice_details;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -29,47 +29,47 @@ FROM invoice_details;
         }
     }
 
-    public InvoiceDetail CreateInvoiceDetail(int idHoaDon, int idHangHoa, int soLuong, decimal gia)
+    public InvoiceDetail CreateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
     {
         var sql = $@"
-INSERT INTO invoice_details (id_hoadon, id_hanghoa, soluong, gia) 
-VALUES (@idHoaDon, @idHangHoa, @soLuong, @gia)
-RETURNING id_hoadon as {nameof(InvoiceDetail.ID_HoaDon)},
-          id_hanghoa as {nameof(InvoiceDetail.ID_HangHoa)},
-          soluong as {nameof(InvoiceDetail.SoLuong)},
-          gia as {nameof(InvoiceDetail.Gia)};
+INSERT INTO invoice_details (invoices_id , product_id , amount, price) 
+VALUES (@invoices_id , @product_id, @amount, @price)
+RETURNING invoices_id  as {nameof(InvoiceDetail.invoices_id )},
+          product_id  as {nameof(InvoiceDetail.product_id )},
+          amount as {nameof(InvoiceDetail.amount)},
+          price as {nameof(InvoiceDetail.price)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<InvoiceDetail>(sql, new { idHoaDon, idHangHoa, soLuong, gia });
+            return conn.QueryFirst<InvoiceDetail>(sql, new { invoices_id , product_id, amount, price });
         }
     }
 
-    public InvoiceDetail UpdateInvoiceDetail(int idHoaDon, int idHangHoa, int soLuong, decimal gia)
+    public InvoiceDetail UpdateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
     {
         var sql = @"
-        UPDATE library_app.invoice_details 
-        SET so_luong = @soLuong, 
-            gia = @gia
-        WHERE id_hoa_don = @idHoaDon AND id_hang_hoa = @idHangHoa
-        RETURNING id_hoa_don as {nameof(InvoiceDetail.ID_HoaDon)},
-                   id_hang_hoa as {nameof(InvoiceDetail.ID_HangHoa)},
-                   so_luong as {nameof(InvoiceDetail.SoLuong)},
-                   gia as {nameof(InvoiceDetail.Gia)};
+        UPDATE noir.invoice_details 
+        SET amount = @amount, 
+            price = @price
+        WHERE invoices_id = @invoices_id  AND product_id = @product_id
+        RETURNING invoices_id as {nameof(InvoiceDetail.invoices_id )},
+                   product_id as {nameof(InvoiceDetail.product_id )},
+                   amount as {nameof(InvoiceDetail.amount)},
+                   price as {nameof(InvoiceDetail.price)};
         ";
 
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<InvoiceDetail>(sql, new { idHoaDon, idHangHoa, soLuong, gia });
+            return conn.QueryFirst<InvoiceDetail>(sql, new { invoices_id , product_id, amount, price });
         }
     }
 
-    public bool DeleteInvoiceDetail(int idHoaDon, int idHangHoa)
+    public bool DeleteInvoiceDetail(int invoices_id , int product_id)
     {
-        var sql = @"DELETE FROM invoice_details WHERE id_hoadon = @idHoaDon AND id_hanghoa = @idHangHoa;";
+        var sql = @"DELETE FROM invoice_details WHERE invoices_id  = @invoices_id  AND product_id  = @product_id;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Execute(sql, new { idHoaDon, idHangHoa }) == 1;
+            return conn.Execute(sql, new { invoices_id , product_id }) == 1;
         }
     }
 }

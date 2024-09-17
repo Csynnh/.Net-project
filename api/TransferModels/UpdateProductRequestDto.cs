@@ -5,10 +5,10 @@ namespace api.TransferModels;
 // UpdateProductRequestDto.cs
 public class UpdateProductRequestDto
 {
-    public int ID_HangHoa { get; set; }
-    public string TenHangHoa { get; set; } = string.Empty;
-    public string MoTa { get; set; } = string.Empty;
-    public decimal Gia { get; set; }
-    public int SoLuongTonKho { get; set; }
-    public string HinhAnh { get; set; } = string.Empty;
+    public int id  { get; set; }
+    public string name { get; set; } = string.Empty;
+    public string desc { get; set; } = string.Empty;
+    public decimal price { get; set; }
+    public int inventory { get; set; }
+    public string image_url { get; set; } = string.Empty;
 }

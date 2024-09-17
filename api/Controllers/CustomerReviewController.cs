@@ -40,7 +40,7 @@ public class CustomerReviewController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully created a review",
-            ResponseData = _customerReviewService.CreateCustomerReview(dto.ID_TaiKhoan, dto.ID_HangHoa, dto.NoiDung, dto.DanhGia, dto.NgayNhanXet)
+            ResponseData = _customerReviewService.CreateCustomerReview(dto.account_id , dto.product_id , dto.content, dto.vote, dto.created_date)
         };
     }
 
@@ -53,7 +53,7 @@ public class CustomerReviewController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _customerReviewService.UpdateCustomerReview(id, dto.ID_TaiKhoan, dto.ID_HangHoa, dto.NoiDung, dto.DanhGia, dto.NgayNhanXet)
+            ResponseData = _customerReviewService.UpdateCustomerReview(id, dto.account_id , dto.product_id , dto.content, dto.vote, dto.created_date)
         };
     }
 

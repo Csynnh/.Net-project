@@ -17,11 +17,11 @@ public class InvoiceRepository
     public IEnumerable<Invoice> GetInvoices()
     {
         string sql = $@"
-SELECT id_hoadon as {nameof(Invoice.ID_HoaDon)},
-       id_taikhoan as {nameof(Invoice.ID_TaiKhoan)},
-       ngayxuathoadon as {nameof(Invoice.NgayXuatHoaDon)},
-       tongtien as {nameof(Invoice.TongTien)},
-       trangthai as {nameof(Invoice.TrangThai)}
+SELECT id  as {nameof(Invoice.id )},
+       account_id  as {nameof(Invoice.account_id )},
+       created_date as {nameof(Invoice.created_date)},
+       price as {nameof(Invoice.price)},
+       status as {nameof(Invoice.status)}
 FROM invoices;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -30,51 +30,51 @@ FROM invoices;
         }
     }
 
-    public Invoice CreateInvoice(int idTaiKhoan, DateTime ngayXuatHoaDon, decimal tongTien, string trangThai)
+    public Invoice CreateInvoice(int account_id, DateTime created_date, decimal price, string status)
     {
         var sql = $@"
-INSERT INTO invoices (id_taikhoan, ngayxuathoadon, tongtien, trangthai) 
-VALUES (@idTaiKhoan, @ngayXuatHoaDon, @tongTien, @trangThai)
-RETURNING id_hoadon as {nameof(Invoice.ID_HoaDon)},
-          id_taikhoan as {nameof(Invoice.ID_TaiKhoan)},
-          ngayxuathoadon as {nameof(Invoice.NgayXuatHoaDon)},
-          tongtien as {nameof(Invoice.TongTien)},
-          trangthai as {nameof(Invoice.TrangThai)};
+INSERT INTO invoices (account_id , created_date, price, status) 
+VALUES (@account_id, @created_date, @price, @status)
+RETURNING id  as {nameof(Invoice.id )},
+          account_id  as {nameof(Invoice.account_id )},
+          created_date as {nameof(Invoice.created_date)},
+          price as {nameof(Invoice.price)},
+          status as {nameof(Invoice.status)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Invoice>(sql, new { idTaiKhoan, ngayXuatHoaDon, tongTien, trangThai });
+            return conn.QueryFirst<Invoice>(sql, new { account_id, created_date, price, status });
         }
     }
 
-    public bool DeleteInvoice(int idHoaDon)
+    public bool DeleteInvoice(int id)
     {
-        var sql = @"DELETE FROM invoices WHERE id_hoadon = @idHoaDon;";
+        var sql = @"DELETE FROM invoices WHERE id  = @id;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Execute(sql, new { idHoaDon }) == 1;
+            return conn.Execute(sql, new { id }) == 1;
         }
     }
 
-    public Invoice UpdateInvoice(int idHoaDon, int idTaiKhoan, DateTime ngayXuatHoaDon, decimal tongTien, string trangThai)
+    public Invoice UpdateInvoice(int id, int account_id , DateTime created_date, decimal price, string status)
     {
         var sql = @"
-        UPDATE library_app.invoices 
-        SET id_tai_khoan = @idTaiKhoan, 
-            ngay_xuat_hoa_don = @ngayXuatHoaDon, 
-            tong_tien = @tongTien, 
-            trang_thai = @trangThai
-        WHERE id_hoa_don = @idHoaDon
-        RETURNING id_hoa_don as {nameof(Invoice.ID_HoaDon)},
-                   id_tai_khoan as {nameof(Invoice.ID_TaiKhoan)},
-                   ngay_xuat_hoa_don as {nameof(Invoice.NgayXuatHoaDon)},
-                   tong_tien as {nameof(Invoice.TongTien)},
-                   trang_thai as {nameof(Invoice.TrangThai)};
+        UPDATE noir.invoices 
+        SET account_id = @id, 
+            created_date = @created_date, 
+            price = @price, 
+            status = @status
+        WHERE id = @id
+        RETURNING id as {nameof(Invoice.id )},
+                   account_id as {nameof(Invoice.account_id )},
+                   created_date as {nameof(Invoice.created_date)},
+                   price as {nameof(Invoice.price)},
+                   status as {nameof(Invoice.status)};
         ";
 
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Invoice>(sql, new { idHoaDon, idTaiKhoan, ngayXuatHoaDon, tongTien, trangThai });
+            return conn.QueryFirst<Invoice>(sql, new { id, account_id, created_date, price, status });
         }
     }
 }
