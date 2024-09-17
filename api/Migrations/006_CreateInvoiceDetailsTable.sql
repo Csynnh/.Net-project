@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS noir.InvoiceDetails (
-    invoice_id INT,
-    product_id INT,
+    invoice_id INT NOT NULL,
+    product_id INT NOT NULL,
+    amount INT NOT NULL,
+    price INT NOT NULL,
     PRIMARY KEY (invoice_id, product_id),
     CONSTRAINT fk_invoice
         FOREIGN KEY (invoice_id) REFERENCES Invoices(id)
