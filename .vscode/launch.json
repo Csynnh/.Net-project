@@ -1,0 +1,12 @@
+{
+  "name": ".NET Stalker",
+  "type": "stalker",
+  "request": "launch",
+  "project": "${workspaceFolder}/api/api.csproj",
+  "process": "${workspaceFolder}/api/bin/Debug/net8.0/MyWebApp",
+  "cwd": "${workspaceFolder}/api",
+  "env": {
+      "ASPNETCORE_ENVIRONMENT": "Development",
+      "pgconn":"postgresql://postgres:Password@34.243.245.89:5432/todo_db"
+  }
+}

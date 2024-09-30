@@ -1,7 +1,7 @@
 ﻿namespace infrastructure;
 public class Utilities
 {
-    private static readonly Uri Uri = new Uri(Environment.GetEnvironmentVariable("pgconn")!);
+    private static readonly Uri Uri = new Uri("postgresql://postgres:Password@34.243.245.89:5432/todo_db");
 
     public static readonly string
         ProperlyFormattedConnectionString = string.Format(
