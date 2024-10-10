@@ -1,3 +1,5 @@
+using infrastructure.EnumVariables;
+
 namespace infrastructure.DataModels;
 
 public class Account
@@ -9,5 +11,5 @@ public class Account
     public string email { get; set; } = string.Empty;  // Địa chỉ email của người dùng
     public string phone_number { get; set; } = string.Empty;  // Số điện thoại của người dùng
     public string address  { get; set; } = string.Empty;  // Địa chỉ của người dùng
-    public string role  { get; set; } = "user";  // Vai trò: admin hoặc user
+    public Role role  { get; set; } = Role.user;  // Vai trò: admin hoặc user
 }
