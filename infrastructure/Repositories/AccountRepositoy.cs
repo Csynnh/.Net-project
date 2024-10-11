@@ -23,7 +23,6 @@ SELECT id as {nameof(Account.id)},
        name as {nameof(Account.name)},
        email as {nameof(Account.email)},
        phone_number as {nameof(Account.phone_number)},
-       address  as {nameof(Account.address )},
        role  as {nameof(Account.role )}
 FROM accounts;
 ";
@@ -33,7 +32,7 @@ FROM accounts;
         }
     }
 
-    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string address , string role )
+    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string role )
     {
         var sql = $@"
 INSERT INTO accounts (username , password , name, email, phone_number, address , role ) 
@@ -44,20 +43,19 @@ RETURNING id as {nameof(Account.id)},
           name as {nameof(Account.name)},
           email as {nameof(Account.email)},
           phone_number as {nameof(Account.phone_number)},
-          address  as {nameof(Account.address )},
           role  as {nameof(Account.role )};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Account>(sql, new { username , password , name, email, phone_number, address , role  });
+            return conn.QueryFirst<Account>(sql, new { username , password , name, email, phone_number , role  });
         }
     }
 
-    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number, string address , string role )
+    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number , string role )
     {
         var sql = $@"
 UPDATE accounts 
-SET username  = @username , password  = @password , name = @name, email = @email, phone_number = @phone_number, address  = @address , role  = @role 
+SET username  = @username , password  = @password , name = @name, email = @email, phone_number = @phone_number, role  = @role 
 WHERE id = @id
 RETURNING id as {nameof(Account.id)},
           username  as {nameof(Account.username )},
@@ -65,12 +63,11 @@ RETURNING id as {nameof(Account.id)},
           name as {nameof(Account.name)},
           email as {nameof(Account.email)},
           phone_number as {nameof(Account.phone_number)},
-          address  as {nameof(Account.address )},
           role  as {nameof(Account.role )};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Account>(sql, new { id, username , password , name, email, phone_number, address , role  });
+            return conn.QueryFirst<Account>(sql, new { id, username , password , name, email, phone_number , role  });
         }
     }
 

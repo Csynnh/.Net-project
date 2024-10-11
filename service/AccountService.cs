@@ -19,7 +19,7 @@ public class AccountService
         return _accountRepository.GetAccounts();
     }
 
-    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string address , string role )
+    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string role )
     {
         var doesAccountExist = _accountRepository.DoesAccountWithUsernameExist(username );
         if (doesAccountExist)
@@ -27,12 +27,12 @@ public class AccountService
             throw new ValidationException("Account already exists with username " + username );
         }
 
-        return _accountRepository.CreateAccount(username , password , name, email, phone_number, address , role );
+        return _accountRepository.CreateAccount(username , password , name, email, phone_number, role );
     }
 
-    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number, string address , string role )
+    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number, string role )
     {
-        return _accountRepository.UpdateAccount(id, username , password , name, email, phone_number, address , role );
+        return _accountRepository.UpdateAccount(id, username , password , name, email, phone_number , role );
     }
 
     public void DeleteAccount(int id)

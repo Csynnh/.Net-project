@@ -19,14 +19,14 @@ public class InvoiceService
         return _invoiceRepository.GetInvoices();
     }
 
-    public Invoice CreateInvoice(int account_id, DateTime created_date, decimal price, string status)
+    public Invoice CreateInvoice(int account_id, DateTime created_date, decimal total, string status, string checkout_method, string shipped_method)
     {
-        return _invoiceRepository.CreateInvoice(account_id, created_date, price, status);
+        return _invoiceRepository.CreateInvoice(account_id, created_date, total, status, checkout_method, shipped_method);
     }
 
-    public Invoice UpdateInvoice(int id , int account_id, DateTime created_date, decimal price, string status)
+    public Invoice UpdateInvoice(int id , int account_id, DateTime created_date, decimal total, string status, string checkout_method, string shipped_method)
     {
-        return _invoiceRepository.UpdateInvoice(id , account_id, created_date, price, status);
+        return _invoiceRepository.UpdateInvoice(id , account_id, created_date, total, status, checkout_method, shipped_method);
     }
 
     public void DeleteInvoice(int id )
