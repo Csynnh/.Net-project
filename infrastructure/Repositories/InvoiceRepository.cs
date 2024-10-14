@@ -40,7 +40,7 @@ RETURNING id as Id, account_id as AccountId, created_at as CreatedAt, total as T
         }
     }
 
-    public Invoice UpdateInvoice(Guid invoiceId, decimal total, int status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
+    public Invoice UpdateInvoice(Guid invoiceId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
     {
         var sql = @"
 UPDATE invoices

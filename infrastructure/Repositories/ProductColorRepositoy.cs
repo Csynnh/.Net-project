@@ -45,7 +45,7 @@ RETURNING id as Id, product_id as ProductId, color_name as ColorName, color_code
     }
 
     // Update an existing product color
-    public ProductColor UpdateProductColor(int colorId, string colorName, string colorCode, int inventory, int total, string image1Url, string image2Url, string image3Url, string image4Url, string image5Url)
+    public ProductColor UpdateProductColor(Guid colorId, string colorName, string colorCode, int inventory, int total, string image1Url, string image2Url, string image3Url, string image4Url, string image5Url)
     {
         var sql = @"
 UPDATE productcolors

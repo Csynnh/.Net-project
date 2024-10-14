@@ -30,7 +30,7 @@ FROM library_app.books;
     }
 
 
-    public Book UpdateBook(string bookTitle, int bookId, string publisher, string coverImgUrl, string author)
+    public Book UpdateBook(string bookTitle, Guid bookId, string publisher, string coverImgUrl, string author)
     {
         var sql = $@"
 UPDATE library_app.books SET book_title = @bookTitle, publisher = @publisher, cover_img_url = @coverImgUrl, author = @author
@@ -65,7 +65,7 @@ RETURNING book_id as {nameof(Book.BookId)},
         }
     }
 
-    public bool DeleteBook(int bookId)
+    public bool DeleteBook(Guid bookId)
     {
         var sql = @"DELETE FROM library_app.books WHERE book_id = @bookId;";
         using (var conn = _dataSource.OpenConnection())
