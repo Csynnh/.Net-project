@@ -4,7 +4,7 @@ using api.CustomDataAnnotations;
 namespace api.TransferModels;
 
 // CreateReviewRequestDto.cs
-public class CreateReviewRequestDto
+public class CreateCustomerReviewRequestDto
 {
     public int account_id  { get; set; }
     public int product_id  { get; set; }

@@ -21,7 +21,7 @@ public class AccountService
 
     public Account CreateAccount(string username , string password , string name, string email, string phone_number, string role )
     {
-        var doesAccountExist = _accountRepository.DoesAccountWithUsernameExist(username );
+        var doesAccountExist = _accountRepository.doesAccountExist(username);
         if (doesAccountExist)
         {
             throw new ValidationException("Account already exists with username " + username );

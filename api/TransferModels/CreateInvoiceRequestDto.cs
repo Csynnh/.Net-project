@@ -6,7 +6,6 @@ namespace api.TransferModels;
 // CreateInvoiceRequestDto.cs
 public class CreateInvoiceRequestDto
 {
-    public int id  { get; set; }  
     public int account_id  { get; set; }  
     public DateTime created_date { get; set; }  
     public decimal price { get; set; }  

@@ -1,75 +1,63 @@
 using Dapper;
 using infrastructure.DataModels;
-using infrastructure.QueryModels;
 using Npgsql;
 
 namespace infrastructure.Repositories;
-
 public class InvoiceDetailRepository
 {
     private NpgsqlDataSource _dataSource;
 
-    public InvoiceDetailRepository(NpgsqlDataSource datasource)
+    public InvoiceDetailRepository(NpgsqlDataSource dataSource)
     {
-        _dataSource = datasource;
+        _dataSource = dataSource;
     }
 
-    public IEnumerable<InvoiceDetail> GetInvoiceDetails()
-    {
-        string sql = $@"
-SELECT invoices_id  as {nameof(InvoiceDetail.invoices_id )},
-       product_id  as {nameof(InvoiceDetail.product_id )},
-       amount as {nameof(InvoiceDetail.amount)},
-       price as {nameof(InvoiceDetail.price)}
-FROM invoice_details;
-";
-        using (var conn = _dataSource.OpenConnection())
-        {
-            return conn.Query<InvoiceDetail>(sql);
-        }
-    }
-
-    public InvoiceDetail CreateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
-    {
-        var sql = $@"
-INSERT INTO invoice_details (invoices_id , product_id , amount, price) 
-VALUES (@invoices_id , @product_id, @amount, @price)
-RETURNING invoices_id  as {nameof(InvoiceDetail.invoices_id )},
-          product_id  as {nameof(InvoiceDetail.product_id )},
-          amount as {nameof(InvoiceDetail.amount)},
-          price as {nameof(InvoiceDetail.price)};
-";
-        using (var conn = _dataSource.OpenConnection())
-        {
-            return conn.QueryFirst<InvoiceDetail>(sql, new { invoices_id , product_id, amount, price });
-        }
-    }
-
-    public InvoiceDetail UpdateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
+    public IEnumerable<InvoiceDetail> GetInvoiceDetailsByInvoiceId(Guid invoiceId)
     {
         var sql = @"
-        UPDATE noir.invoice_details 
-        SET amount = @amount, 
-            price = @price
-        WHERE invoices_id = @invoices_id  AND product_id = @product_id
-        RETURNING invoices_id as {nameof(InvoiceDetail.invoices_id )},
-                   product_id as {nameof(InvoiceDetail.product_id )},
-                   amount as {nameof(InvoiceDetail.amount)},
-                   price as {nameof(InvoiceDetail.price)};
-        ";
-
+SELECT invoice_id as InvoiceId, product_id as ProductId, amount as Amount, price as Price
+FROM invoicedetails
+WHERE invoice_id = @invoiceId;
+";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<InvoiceDetail>(sql, new { invoices_id , product_id, amount, price });
+            return conn.Query<InvoiceDetail>(sql, new { invoiceId });
         }
     }
 
-    public bool DeleteInvoiceDetail(int invoices_id , int product_id)
+    public InvoiceDetail CreateInvoiceDetail(Guid invoiceId, Guid productId, int amount, decimal price)
     {
-        var sql = @"DELETE FROM invoice_details WHERE invoices_id  = @invoices_id  AND product_id  = @product_id;";
+        var sql = @"
+INSERT INTO invoicedetails (invoice_id, product_id, amount, price)
+VALUES (@invoiceId, @productId, @amount, @price)
+RETURNING invoice_id as InvoiceId, product_id as ProductId, amount as Amount, price as Price;
+";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Execute(sql, new { invoices_id , product_id }) == 1;
+            return conn.QueryFirst<InvoiceDetail>(sql, new { invoiceId, productId, amount, price });
+        }
+    }
+
+    public InvoiceDetail UpdateInvoiceDetail(Guid invoiceId, Guid productId, int amount, decimal price)
+    {
+        var sql = @"
+UPDATE invoicedetails
+SET amount = @amount, price = @price
+WHERE invoice_id = @invoiceId AND product_id = @productId
+RETURNING invoice_id as InvoiceId, product_id as ProductId, amount as Amount, price as Price;
+";
+        using (var conn = _dataSource.OpenConnection())
+        {
+            return conn.QueryFirst<InvoiceDetail>(sql, new { invoiceId, productId, amount, price });
+        }
+    }
+
+    public bool DeleteInvoiceDetail(Guid invoiceId, Guid productId)
+    {
+        var sql = @"DELETE FROM invoicedetails WHERE invoice_id = @invoiceId AND product_id = @productId;";
+        using (var conn = _dataSource.OpenConnection())
+        {
+            return conn.Execute(sql, new { invoiceId, productId }) == 1;
         }
     }
 }

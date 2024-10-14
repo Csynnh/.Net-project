@@ -4,7 +4,7 @@ namespace api.TransferModels;
 
 
 // UpdateReviewRequestDto.cs
-public class UpdateReviewRequestDto
+public class UpdateCustomerReviewRequestDto
 {
     public int id { get; set; }
     public int account_id  { get; set; }

@@ -1,6 +1,6 @@
 namespace infrastructure.DataModels;
 
-public class Contact_History
+public class UpdateContactHistoryRequestDto
 {
     public Guid id  { get; set; }// Primary Key
     public string account_id { get; set; } = string.Empty;  // id account thực hiện contact

@@ -1,29 +1,22 @@
 using Dapper;
 using infrastructure.DataModels;
-using infrastructure.QueryModels;
 using Npgsql;
 
 namespace infrastructure.Repositories;
-
 public class InvoiceRepository
 {
     private NpgsqlDataSource _dataSource;
-
-    public InvoiceRepository(NpgsqlDataSource datasource)
+    
+    public InvoiceRepository(NpgsqlDataSource dataSource)
     {
-        _dataSource = datasource;
+        _dataSource = dataSource;
     }
 
-    public IEnumerable<Invoice> GetInvoices()
+    public IEnumerable<Invoice> GetAllInvoices()
     {
-        string sql = $@"
-SELECT id  as {nameof(Invoice.id )},
-       account_id  as {nameof(Invoice.account_id )},
-       created_date as {nameof(Invoice.created_date)},
-       price as {nameof(Invoice.total)},
-       status as {nameof(Invoice.status)},
-       checkout_method as {nameof(Invoice.checkout_method)},
-       shipped_method as {nameof(Invoice.shipping_method)};
+        var sql = @"
+SELECT id as Id, account_id as AccountId, created_at as CreatedAt, total as Total, status as Status, 
+       checkout_method as CheckoutMethod, shipping_method as ShippingMethod
 FROM invoices;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -32,56 +25,41 @@ FROM invoices;
         }
     }
 
-    public Invoice CreateInvoice(int account_id, DateTime created_date, decimal total, string status, string checkout_method, string shipping_method)
+    public Invoice CreateInvoice(Guid accountId, decimal total, int status, int checkoutMethod, int shippingMethod)
     {
-        var sql = $@"
-INSERT INTO invoices (account_id , created_date, price, status) 
-VALUES (@account_id, @created_date, @price, @status)
-RETURNING id  as {nameof(Invoice.id )},
-          account_id  as {nameof(Invoice.account_id )},
-          created_date as {nameof(Invoice.created_date)},
-          price as {nameof(Invoice.total)},
-          status as {nameof(Invoice.status)},
-          checkout_method as {nameof(Invoice.checkout_method)},
-          shipped_method as {nameof(Invoice.shipping_method)};
-
+        var sql = @"
+INSERT INTO invoices (account_id, total, status, checkout_method, shipping_method)
+VALUES (@accountId, @total, @status, @checkoutMethod, @shippingMethod)
+RETURNING id as Id, account_id as AccountId, created_at as CreatedAt, total as Total, 
+          status as Status, checkout_method as CheckoutMethod, shipping_method as ShippingMethod;
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Invoice>(sql, new { account_id, created_date, total, status, checkout_method, shipping_method });
+            return conn.QueryFirst<Invoice>(sql, new { accountId, total, status, checkoutMethod, shippingMethod });
         }
     }
 
-    public bool DeleteInvoice(int id)
-    {
-        var sql = @"DELETE FROM invoices WHERE id  = @id;";
-        using (var conn = _dataSource.OpenConnection())
-        {
-            return conn.Execute(sql, new { id }) == 1;
-        }
-    }
-
-    public Invoice UpdateInvoice(int id, int account_id, DateTime created_date, decimal total, string status, string checkout_method, string shipping_method)
+    public Invoice UpdateInvoice(Guid invoiceId, decimal total, int status, int checkoutMethod, int shippingMethod)
     {
         var sql = @"
-        UPDATE noir.invoices 
-        SET account_id = @id, 
-            created_date = @created_date, 
-            price = @price, 
-            status = @status
-        WHERE id = @id
-        RETURNING id as {nameof(Invoice.id )},
-                   account_id as {nameof(Invoice.account_id )},
-                   created_date as {nameof(Invoice.created_date)},
-                   price as {nameof(Invoice.total)},
-                    status as {nameof(Invoice.status)},
-                    checkout_method as {nameof(Invoice.checkout_method)},
-                    shipped_method as {nameof(Invoice.shipping_method)};
-        ";
-
+UPDATE invoices
+SET total = @total, status = @status, checkout_method = @checkoutMethod, shipping_method = @shippingMethod
+WHERE id = @invoiceId
+RETURNING id as Id, account_id as AccountId, created_at as CreatedAt, total as Total, 
+          status as Status, checkout_method as CheckoutMethod, shipping_method as ShippingMethod;
+";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Invoice>(sql, new { id, account_id, created_date, total, status , checkout_method, shipping_method });
+            return conn.QueryFirst<Invoice>(sql, new { invoiceId, total, status, checkoutMethod, shippingMethod });
+        }
+    }
+
+    public bool DeleteInvoice(Guid invoiceId)
+    {
+        var sql = @"DELETE FROM invoices WHERE id = @invoiceId;";
+        using (var conn = _dataSource.OpenConnection())
+        {
+            return conn.Execute(sql, new { invoiceId }) == 1;
         }
     }
 }

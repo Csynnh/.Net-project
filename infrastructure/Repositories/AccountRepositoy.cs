@@ -1,29 +1,22 @@
 using Dapper;
 using infrastructure.DataModels;
-using infrastructure.QueryModels;
 using Npgsql;
 
 namespace infrastructure.Repositories;
-
 public class AccountRepository
 {
     private NpgsqlDataSource _dataSource;
 
-    public AccountRepository(NpgsqlDataSource datasource)
+    public AccountRepository(NpgsqlDataSource dataSource)
     {
-        _dataSource = datasource;
+        _dataSource = dataSource;
     }
 
-    public IEnumerable<Account> GetAccounts()
+    public IEnumerable<Account> GetAllAccounts()
     {
-        string sql = $@"
-SELECT id as {nameof(Account.id)},
-       username  as {nameof(Account.username )},
-       password  as {nameof(Account.password )},
-       name as {nameof(Account.name)},
-       email as {nameof(Account.email)},
-       phone_number as {nameof(Account.phone_number)},
-       role  as {nameof(Account.role )}
+        var sql = @"
+SELECT id as Id, username as Username, password as Password, name as Name, 
+       email as Email, phone_number as PhoneNumber, role as Role
 FROM accounts;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -32,51 +25,41 @@ FROM accounts;
         }
     }
 
-    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string role )
+    public Account CreateAccount(string username, string password, string name, string email, string phoneNumber, bool role)
     {
-        var sql = $@"
-INSERT INTO accounts (username , password , name, email, phone_number, address , role ) 
-VALUES (@username , @password , @name, @email, @phone_number, @address , @role )
-RETURNING id as {nameof(Account.id)},
-          username  as {nameof(Account.username )},
-          password  as {nameof(Account.password )},
-          name as {nameof(Account.name)},
-          email as {nameof(Account.email)},
-          phone_number as {nameof(Account.phone_number)},
-          role  as {nameof(Account.role )};
+        var sql = @"
+INSERT INTO accounts (username, password, name, email, phone_number, role)
+VALUES (@username, @password, @name, @email, @phoneNumber, @role)
+RETURNING id as Id, username as Username, password as Password, name as Name, 
+          email as Email, phone_number as PhoneNumber, role as Role;
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Account>(sql, new { username , password , name, email, phone_number , role  });
+            return conn.QueryFirst<Account>(sql, new { username, password, name, email, phoneNumber, role });
         }
     }
 
-    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number , string role )
+    public Account UpdateAccount(Guid accountId, string username, string password, string name, string email, string phoneNumber, bool role)
     {
-        var sql = $@"
-UPDATE accounts 
-SET username  = @username , password  = @password , name = @name, email = @email, phone_number = @phone_number, role  = @role 
-WHERE id = @id
-RETURNING id as {nameof(Account.id)},
-          username  as {nameof(Account.username )},
-          password  as {nameof(Account.password )},
-          name as {nameof(Account.name)},
-          email as {nameof(Account.email)},
-          phone_number as {nameof(Account.phone_number)},
-          role  as {nameof(Account.role )};
+        var sql = @"
+UPDATE accounts
+SET username = @username, password = @password, name = @name, email = @email, phone_number = @phoneNumber, role = @role
+WHERE id = @accountId
+RETURNING id as Id, username as Username, password as Password, name as Name, 
+          email as Email, phone_number as PhoneNumber, role as Role;
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Account>(sql, new { id, username , password , name, email, phone_number , role  });
+            return conn.QueryFirst<Account>(sql, new { accountId, username, password, name, email, phoneNumber, role });
         }
     }
 
-    public bool DeleteAccount(int id)
+    public bool DeleteAccount(Guid accountId)
     {
-        var sql = @"DELETE FROM accounts WHERE id = @id;";
+        var sql = @"DELETE FROM accounts WHERE id = @accountId;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Execute(sql, new { id }) == 1;
+            return conn.Execute(sql, new { accountId }) == 1;
         }
     }
 
