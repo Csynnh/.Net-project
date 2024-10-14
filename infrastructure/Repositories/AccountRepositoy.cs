@@ -1,9 +1,11 @@
 using Dapper;
 using infrastructure.DataModels;
 using infrastructure.EnumVariables;
+using infrastructure.QueryModels;
 using Npgsql;
 
 namespace infrastructure.Repositories;
+
 public class AccountRepository
 {
     private NpgsqlDataSource _dataSource;
@@ -13,13 +15,19 @@ public class AccountRepository
         _dataSource = dataSource;
     }
 
-    public IEnumerable<Account> GetAllAccounts()
+    public IEnumerable<Account> GetAccountForFeed()
     {
-        var sql = @"
-SELECT id as Id, username as Username, password as Password, name as Name, 
-       email as Email, phone_number as PhoneNumber, role as Role
+        string sql = $@"
+SELECT id as {nameof(AccountFeedQuery.id)},
+       username as {nameof(AccountFeedQuery.username)},
+       password as {nameof(AccountFeedQuery.password)},
+       name as {nameof(AccountFeedQuery.name)},
+       email as {nameof(AccountFeedQuery.email)},
+       phone_number as {nameof(AccountFeedQuery.phone_number)},
+       role as {nameof(AccountFeedQuery.role)}
 FROM accounts;
 ";
+
         using (var conn = _dataSource.OpenConnection())
         {
             return conn.Query<Account>(sql);
@@ -28,11 +36,16 @@ FROM accounts;
 
     public Account CreateAccount(string username, string password, string name, string email, string phoneNumber, Role role)
     {
-        var sql = @"
+        var sql = $@"
 INSERT INTO accounts (username, password, name, email, phone_number, role)
 VALUES (@username, @password, @name, @email, @phoneNumber, @role)
-RETURNING id as Id, username as Username, password as Password, name as Name, 
-          email as Email, phone_number as PhoneNumber, role as Role;
+RETURNING id as {nameof(Account.id)}, 
+          username as {nameof(Account.username)}, 
+          password as {nameof(Account.password)}, 
+          name as {nameof(Account.name)}, 
+          email as {nameof(Account.email)}, 
+          phone_number as {nameof(Account.phone_number)}, 
+          role as {nameof(Account.role)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
@@ -42,12 +55,22 @@ RETURNING id as Id, username as Username, password as Password, name as Name,
 
     public Account UpdateAccount(Guid accountId, string username, string password, string name, string email, string phoneNumber, Role role)
     {
-        var sql = @"
+        var sql = $@"
 UPDATE accounts
-SET username = @username, password = @password, name = @name, email = @email, phone_number = @phoneNumber, role = @role
+SET username = @username, 
+    password = @password, 
+    name = @name, 
+    email = @email, 
+    phone_number = @phoneNumber, 
+    role = @role
 WHERE id = @accountId
-RETURNING id as Id, username as Username, password as Password, name as Name, 
-          email as Email, phone_number as PhoneNumber, role as Role;
+RETURNING id as {nameof(Account.id)}, 
+          username as {nameof(Account.username)}, 
+          password as {nameof(Account.password)}, 
+          name as {nameof(Account.name)}, 
+          email as {nameof(Account.email)}, 
+          phone_number as {nameof(Account.phone_number)}, 
+          role as {nameof(Account.role)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
@@ -64,12 +87,12 @@ RETURNING id as Id, username as Username, password as Password, name as Name,
         }
     }
 
-    public bool DoesAccountWithUsernameExist(string username )
+    public bool DoesAccountWithUsernameExist(string username)
     {
-        var sql = @"SELECT COUNT(*) FROM accounts WHERE username  = @username ;";
+        var sql = @"SELECT COUNT(*) FROM accounts WHERE username = @username;";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.ExecuteScalar<int>(sql, new { username  }) == 1;
+            return conn.ExecuteScalar<int>(sql, new { username }) == 1;
         }
     }
 }

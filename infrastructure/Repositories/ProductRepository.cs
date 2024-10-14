@@ -1,73 +1,97 @@
 using Dapper;
 using infrastructure.DataModels;
+using infrastructure.QueryModels;
 using Npgsql;
 
-namespace infrastructure.Repositories;
-public class ProductRepository
+namespace infrastructure.Repositories
 {
-    private NpgsqlDataSource _dataSource;
-
-    public ProductRepository(NpgsqlDataSource dataSource)
+    public class ProductRepository
     {
-        _dataSource = dataSource;
-    }
+        private NpgsqlDataSource _dataSource;
 
-    public IEnumerable<Product> GetAllProducts()
-    {
-        var sql = @"
-SELECT id as Id, prod_name as ProdName, prod_desc as ProdDesc, price as Price, wid as Width, hei as Height, type as Type
+        public ProductRepository(NpgsqlDataSource dataSource)
+        {
+            _dataSource = dataSource;
+        }
+
+        public IEnumerable<Product> GetProductForFeed()
+        {
+            var sql = $@"
+SELECT id as {nameof(ProductFeedQuery.id)}, 
+       prod_name as {nameof(ProductFeedQuery.prod_name)}, 
+       prod_desc as {nameof(ProductFeedQuery.pro_desc)}, 
+       price as {nameof(ProductFeedQuery.price)}, 
+       wid as {nameof(ProductFeedQuery.width)}, 
+       hei as {nameof(ProductFeedQuery.height)}, 
+       type as {nameof(ProductFeedQuery.type)}
 FROM products;
 ";
-        using (var conn = _dataSource.OpenConnection())
-        {
-            return conn.Query<Product>(sql);
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.Query<Product>(sql);
+            }
         }
-    }
 
-    public Product CreateProduct(string prodName, string prodDesc, decimal price, decimal width, decimal height, string type)
-    {
-        var sql = @"
+        public Product CreateProduct(string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
+        {
+            var sql = $@"
 INSERT INTO products (prod_name, prod_desc, price, wid, hei, type)
-VALUES (@prodName, @prodDesc, @price, @width, @height, @type)
-RETURNING id as Id, prod_name as ProdName, prod_desc as ProdDesc, price as Price, 
-          wid as Width, hei as Height, type as Type;
+VALUES (@prod_name, @pro_desc, @price, @width, @height, @type)
+RETURNING id as {nameof(Product.id)}, 
+          prod_name as {nameof(Product.prod_name)}, 
+          prod_desc as {nameof(Product.pro_desc)}, 
+          price as {nameof(Product.price)}, 
+          wid as {nameof(Product.width)}, 
+          hei as {nameof(Product.height)}, 
+          type as {nameof(Product.type)};
 ";
-        using (var conn = _dataSource.OpenConnection())
-        {
-            return conn.QueryFirst<Product>(sql, new { prodName, prodDesc, price, width, height, type });
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.QueryFirst<Product>(sql, new { prod_name, pro_desc, price, width, height, type });
+            }
         }
-    }
 
-    public Product UpdateProduct(Guid productId, string prodName, string prodDesc, decimal price, decimal width, decimal height, string type)
-    {
-        var sql = @"
+        public Product UpdateProduct(Guid productId, string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
+        {
+            var sql = $@"
 UPDATE products
-SET prod_name = @prodName, prod_desc = @prodDesc, price = @price, wid = @width, hei = @height, type = @type
+SET prod_name = @prod_name, 
+    prod_desc = @pro_desc, 
+    price = @price, 
+    wid = @width, 
+    hei = @height, 
+    type = @type
 WHERE id = @productId
-RETURNING id as Id, prod_name as ProdName, prod_desc as ProdDesc, price as Price, 
-          wid as Width, hei as Height, type as Type;
+RETURNING id as {nameof(Product.id)}, 
+          prod_name as {nameof(Product.prod_name)}, 
+          prod_desc as {nameof(Product.pro_desc)}, 
+          price as {nameof(Product.price)}, 
+          wid as {nameof(Product.width)}, 
+          hei as {nameof(Product.height)}, 
+          type as {nameof(Product.type)};
 ";
-        using (var conn = _dataSource.OpenConnection())
-        {
-            return conn.QueryFirst<Product>(sql, new { productId, prodName, prodDesc, price, width, height, type });
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.QueryFirst<Product>(sql, new { productId, prod_name, pro_desc, price, width, height, type });
+            }
         }
-    }
 
-    public bool DeleteProduct(Guid productId)
-    {
-        var sql = @"DELETE FROM products WHERE id = @productId;";
-        using (var conn = _dataSource.OpenConnection())
+        public bool DeleteProduct(Guid productId)
         {
-            return conn.Execute(sql, new { productId }) == 1;
+            var sql = @"DELETE FROM products WHERE id = @productId;";
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.Execute(sql, new { productId }) == 1;
+            }
         }
-    }
 
-    public bool DoesProductExistWithName(string prodName)
-    {
-        var sql = @"SELECT COUNT(*) FROM products WHERE prod_name = @prodName;";
-        using (var conn = _dataSource.OpenConnection())
+        public bool DoesProductExistWithName(string prod_name)
         {
-            return conn.ExecuteScalar<int>(sql, new { prodName }) > 0;
+            var sql = @"SELECT COUNT(*) FROM products WHERE prod_name = @prod_name;";
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.ExecuteScalar<int>(sql, new { prod_name }) > 0;
+            }
         }
     }
 }

@@ -2,7 +2,7 @@ using infrastructure.EnumVariables;
 
 namespace infrastructure.DataModels;
 
-public class UserAddressFeedItem
+public class UserAddressFeedQuery
 {
     public int id { get; set; }  // Primary Key
     public int account_id { get; set; }  // Primary Key

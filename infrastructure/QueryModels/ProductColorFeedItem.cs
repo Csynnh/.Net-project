@@ -1,6 +1,6 @@
 namespace infrastructure.DataModels;
 
-public class ProductColorFeedItem
+public class ProductColorFeedQuery
 {
     public Guid color_id  { get; set; }  // Primary Key, Foreign Key, liên kết tới bảng Hóa đơn
     public Guid product_id  { get; set; }  // Primary Key, Foreign Key, liên kết tới bảng Hàng hóa

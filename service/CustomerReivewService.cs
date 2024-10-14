@@ -15,9 +15,9 @@ public class CustomerReviewService
         _customerReviewRepository = customerReviewRepository;
     }
 
-    public IEnumerable<CustomerReview> GetCustomerReviews()
+    public IEnumerable<CustomerReview> GetCustomerReviewForFeed()
     {
-        return _customerReviewRepository.GetAllCustomerReviews();
+        return _customerReviewRepository.GetCustomerReviewForFeed();
     }
 
     public CustomerReview CreateCustomerReview(Guid account_id, Guid product_id, string content, Rating vote, DateTime created_date)

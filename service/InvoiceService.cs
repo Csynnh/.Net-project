@@ -15,19 +15,19 @@ public class InvoiceService
         _invoiceRepository = invoiceRepository;
     }
 
-    public IEnumerable<Invoice> GetInvoices()
+    public IEnumerable<Invoice> GetInvoiceForFeed()
     {
-        return _invoiceRepository.GetAllInvoices();
+        return _invoiceRepository.GetInvoiceForFeed();
     }
 
-    public Invoice CreateInvoice(Guid account_id, DateTime created_date, decimal total, Status status, Checkout_method checkout_method, Shipping_method shipped_method)
+    public Invoice CreateInvoice(Guid accountId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
     {
-        return _invoiceRepository.CreateInvoice(account_id, created_date, total, status, checkout_method, shipped_method);
+        return _invoiceRepository.CreateInvoice(accountId, total, status, checkoutMethod, shippingMethod);
     }
 
-    public Invoice UpdateInvoice(Guid id , Guid account_id, DateTime created_date, decimal total, Status status, Checkout_method checkout_method, Shipping_method shipped_method)
+    public Invoice UpdateInvoice(Guid invoiceId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
     {
-        return _invoiceRepository.UpdateInvoice(id , account_id, created_date, total, status, checkout_method, shipped_method);
+        return _invoiceRepository.UpdateInvoice(invoiceId, total, status, checkoutMethod, shippingMethod);
     }
 
     public void DeleteInvoice(Guid id )
