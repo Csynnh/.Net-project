@@ -1,5 +1,6 @@
 using Dapper;
 using infrastructure.DataModels;
+using infrastructure.EnumVariables;
 using Npgsql;
 
 namespace infrastructure.Repositories;
@@ -25,7 +26,7 @@ FROM accounts;
         }
     }
 
-    public Account CreateAccount(string username, string password, string name, string email, string phoneNumber, bool role)
+    public Account CreateAccount(string username, string password, string name, string email, string phoneNumber, Role role)
     {
         var sql = @"
 INSERT INTO accounts (username, password, name, email, phone_number, role)
@@ -39,7 +40,7 @@ RETURNING id as Id, username as Username, password as Password, name as Name,
         }
     }
 
-    public Account UpdateAccount(Guid accountId, string username, string password, string name, string email, string phoneNumber, bool role)
+    public Account UpdateAccount(Guid accountId, string username, string password, string name, string email, string phoneNumber, Role role)
     {
         var sql = @"
 UPDATE accounts

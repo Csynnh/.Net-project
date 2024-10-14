@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using infrastructure.DataModels;
+using infrastructure.EnumVariables;
 using infrastructure.QueryModels;
 using infrastructure.Repositories;
 
@@ -16,12 +17,12 @@ public class AccountService
 
     public IEnumerable<Account> GetAccounts()
     { 
-        return _accountRepository.GetAccounts();
+        return _accountRepository.GetAllAccounts();
     }
 
-    public Account CreateAccount(string username , string password , string name, string email, string phone_number, string role )
+    public Account CreateAccount(string username , string password , string name, string email, string phone_number, Role role )
     {
-        var doesAccountExist = _accountRepository.doesAccountExist(username);
+        var doesAccountExist = _accountRepository.DoesAccountWithUsernameExist(username);
         if (doesAccountExist)
         {
             throw new ValidationException("Account already exists with username " + username );
@@ -30,12 +31,12 @@ public class AccountService
         return _accountRepository.CreateAccount(username , password , name, email, phone_number, role );
     }
 
-    public Account UpdateAccount(int id, string username , string password , string name, string email, string phone_number, string role )
+    public Account UpdateAccount(Guid id, string username , string password , string name, string email, string phone_number, Role role )
     {
         return _accountRepository.UpdateAccount(id, username , password , name, email, phone_number , role );
     }
 
-    public void DeleteAccount(int id)
+    public void DeleteAccount(Guid id)
     {
         var result = _accountRepository.DeleteAccount(id);
         if (!result)

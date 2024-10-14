@@ -1,5 +1,6 @@
 using Dapper;
 using infrastructure.DataModels;
+using infrastructure.EnumVariables;
 using Npgsql;
 
 namespace infrastructure.Repositories;
@@ -25,7 +26,7 @@ FROM invoices;
         }
     }
 
-    public Invoice CreateInvoice(Guid accountId, decimal total, int status, int checkoutMethod, int shippingMethod)
+    public Invoice CreateInvoice(Guid accountId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
     {
         var sql = @"
 INSERT INTO invoices (account_id, total, status, checkout_method, shipping_method)
@@ -39,7 +40,7 @@ RETURNING id as Id, account_id as AccountId, created_at as CreatedAt, total as T
         }
     }
 
-    public Invoice UpdateInvoice(Guid invoiceId, decimal total, int status, int checkoutMethod, int shippingMethod)
+    public Invoice UpdateInvoice(Guid invoiceId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
     {
         var sql = @"
 UPDATE invoices
