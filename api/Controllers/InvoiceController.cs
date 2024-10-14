@@ -47,7 +47,7 @@ public class InvoiceController : ControllerBase
     [HttpPut]
     [ValidateModel]
     [Route("/api/invoices/{id}")]
-    public ResponseDto Put([FromRoute] int id, [FromBody] UpdateInvoiceRequestDto dto)
+    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateInvoiceRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
         return new ResponseDto()
@@ -59,7 +59,7 @@ public class InvoiceController : ControllerBase
 
     [HttpDelete]
     [Route("/api/invoices/{id}")]
-    public ResponseDto Delete([FromRoute] int id)
+    public ResponseDto Delete([FromRoute] Guid id)
     {
         _invoiceService.DeleteInvoice(id);
         return new ResponseDto()

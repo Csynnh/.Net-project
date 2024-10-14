@@ -26,7 +26,7 @@ FROM invoices;
         }
     }
 
-    public Invoice CreateInvoice(Guid accountId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
+    public Invoice CreateInvoice(Guid accountId, decimal total, Status status, Checkout_method checkout_method, Shipping_method shipping_method)
     {
         var sql = @"
 INSERT INTO invoices (account_id, total, status, checkout_method, shipping_method)
@@ -36,7 +36,7 @@ RETURNING id as Id, account_id as AccountId, created_at as CreatedAt, total as T
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Invoice>(sql, new { accountId, total, status, checkoutMethod, shippingMethod });
+            return conn.QueryFirst<Invoice>(sql, new { accountId, total, status, checkout_method, shipping_method });
         }
     }
 

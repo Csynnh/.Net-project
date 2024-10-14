@@ -30,7 +30,7 @@ public class InvoiceService
         return _invoiceRepository.UpdateInvoice(id , account_id, created_date, total, status, checkout_method, shipped_method);
     }
 
-    public void DeleteInvoice(int id )
+    public void DeleteInvoice(Guid id )
     {
         var result = _invoiceRepository.DeleteInvoice(id );
         if (!result)
