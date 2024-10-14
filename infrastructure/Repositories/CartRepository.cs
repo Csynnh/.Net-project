@@ -12,7 +12,7 @@ public class CartRepository
         _dataSource = dataSource;
     }
 
-    public IEnumerable<Cart> GetAllCarts()
+    public IEnumerable<Carts> GetAllCarts()
     {
         var sql = @"
 SELECT id as Id, account_id as AccountId, product_id as ProductId, quantity as Quantity, 
@@ -21,11 +21,11 @@ FROM carts;
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.Query<Cart>(sql);
+            return conn.Query<Carts>(sql);
         }
     }
 
-    public Cart CreateCart(Guid accountId, Guid productId, int quantity)
+    public Carts CreateCart(Guid accountId, Guid productId, int quantity)
     {
         var sql = @"
 INSERT INTO carts (account_id, product_id, quantity)
@@ -34,11 +34,11 @@ RETURNING id as Id, account_id as AccountId, product_id as ProductId, quantity a
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Cart>(sql, new { accountId, productId, quantity });
+            return conn.QueryFirst<Carts>(sql, new { accountId, productId, quantity });
         }
     }
 
-    public Cart UpdateCart(Guid cartId, int quantity)
+    public Carts UpdateCart(Guid cartId, int quantity)
     {
         var sql = @"
 UPDATE carts
@@ -48,7 +48,7 @@ RETURNING id as Id, account_id as AccountId, product_id as ProductId, quantity a
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Cart>(sql, new { cartId, quantity });
+            return conn.QueryFirst<Carts>(sql, new { cartId, quantity });
         }
     }
 

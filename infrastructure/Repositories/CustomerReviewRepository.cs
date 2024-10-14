@@ -1,5 +1,6 @@
 using Dapper;
 using infrastructure.DataModels;
+using infrastructure.EnumVariables;
 using Npgsql;
 
 namespace infrastructure.Repositories;
@@ -25,7 +26,7 @@ FROM customerreviews;
         }
     }
 
-    public CustomerReview CreateCustomerReview(Guid accountId, Guid productId, string content, int vote)
+    public CustomerReview CreateCustomerReview(Guid accountId, Guid productId, string content, Rating vote, DateTime created_at)
     {
         var sql = @"
 INSERT INTO customerreviews (account_id, product_id, content, vote)
@@ -35,11 +36,11 @@ RETURNING id as Id, account_id as AccountId, product_id as ProductId,
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<CustomerReview>(sql, new { accountId, productId, content, vote });
+            return conn.QueryFirst<CustomerReview>(sql, new { accountId, productId, content, vote, created_at });
         }
     }
 
-    public CustomerReview UpdateCustomerReview(Guid reviewId, string content, int vote)
+    public CustomerReview UpdateCustomerReview(Guid reviewId, string content, Rating vote, DateTime create_at)
     {
         var sql = @"
 UPDATE customerreviews
@@ -50,7 +51,7 @@ RETURNING id as Id, account_id as AccountId, product_id as ProductId,
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<CustomerReview>(sql, new { reviewId, content, vote });
+            return conn.QueryFirst<CustomerReview>(sql, new { reviewId, content, vote, create_at });
         }
     }
 

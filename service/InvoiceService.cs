@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using infrastructure.DataModels;
+using infrastructure.EnumVariables;
 using infrastructure.QueryModels;
 using infrastructure.Repositories;
 
@@ -16,15 +17,15 @@ public class InvoiceService
 
     public IEnumerable<Invoice> GetInvoices()
     {
-        return _invoiceRepository.GetInvoices();
+        return _invoiceRepository.GetAllInvoices();
     }
 
-    public Invoice CreateInvoice(int account_id, DateTime created_date, decimal total, string status, string checkout_method, string shipped_method)
+    public Invoice CreateInvoice(Guid account_id, DateTime created_date, decimal total, Status status, Checkout_method checkout_method, Shipping_method shipped_method)
     {
         return _invoiceRepository.CreateInvoice(account_id, created_date, total, status, checkout_method, shipped_method);
     }
 
-    public Invoice UpdateInvoice(int id , int account_id, DateTime created_date, decimal total, string status, string checkout_method, string shipped_method)
+    public Invoice UpdateInvoice(Guid id , Guid account_id, DateTime created_date, decimal total, Status status, Checkout_method checkout_method, Shipping_method shipped_method)
     {
         return _invoiceRepository.UpdateInvoice(id , account_id, created_date, total, status, checkout_method, shipped_method);
     }

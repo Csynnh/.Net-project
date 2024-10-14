@@ -59,7 +59,7 @@ public class AccountController : ControllerBase
 
     [HttpDelete]
     [Route("/api/accounts/{id}")]
-    public ResponseDto Delete([FromRoute] int id)
+    public ResponseDto Delete([FromRoute] Guid id)
     {
         _accountService.DeleteAccount(id);
         return new ResponseDto()
