@@ -40,7 +40,7 @@ public class InvoiceController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an invoice",
-            ResponseData = _invoiceService.CreateInvoice(dto.account_id , dto.created_date, dto.price, dto.status)
+            ResponseData = _invoiceService.CreateInvoice(dto.account_id , dto.created_date, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
         };
     }
 
@@ -53,7 +53,7 @@ public class InvoiceController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _invoiceService.UpdateInvoice(id, dto.account_id , dto.created_date, dto.price, dto.status)
+            ResponseData = _invoiceService.UpdateInvoice(id, dto.account_id , dto.created_date, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
         };
     }
 

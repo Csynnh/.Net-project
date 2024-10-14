@@ -11,4 +11,6 @@ public class CreateInvoiceRequestDto
     public DateTime created_date { get; set; }  
     public decimal price { get; set; }  
     public string status { get; set; } = "Đang xử lý";  
+    public int checkout_method { get; set; }
+    public int shipping_method { get; set; }
 }

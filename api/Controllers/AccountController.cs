@@ -40,7 +40,7 @@ public class AccountController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an account",
-            ResponseData = _accountService.CreateAccount(dto.username , dto.password , dto.name, dto.email, dto.phone_number, dto.address , dto.role )
+            ResponseData = _accountService.CreateAccount(dto.username , dto.password , dto.name, dto.email, dto.phone_number , dto.role )
         };
     }
 
