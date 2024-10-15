@@ -27,7 +27,7 @@ public class InvoiceDetailController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _invoiceDetailService.GetInvoiceDetails()
+            ResponseData = _invoiceDetailService.GetInvoiceDetailForFeed()
         };
     }
 
@@ -59,7 +59,7 @@ public class InvoiceDetailController : ControllerBase
 
     [HttpDelete]
     [Route("/api/invoicedetails/{invoices_id }/{product_id}")]
-    public ResponseDto Delete([FromRoute] int invoices_id , [FromRoute] int product_id)
+    public ResponseDto Delete([FromRoute] Guid invoices_id , [FromRoute] Guid product_id)
     {
         _invoiceDetailService.DeleteInvoiceDetail(invoices_id , product_id);
         return new ResponseDto()

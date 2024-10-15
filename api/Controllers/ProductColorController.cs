@@ -2,21 +2,22 @@ using System.ComponentModel.DataAnnotations;
 using api.CustomDataAnnotations;
 using api.Filters;
 using api.TransferModels;
+using infrastructure.DataModels;
 using infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using service;
 
 namespace library.Controllers;
 
-public class InvoiceController : ControllerBase
+public class ProductColorController : ControllerBase
 {
-    private readonly ILogger<InvoiceController> _logger;
-    private readonly InvoiceService _invoiceService;
+    private readonly ILogger<ProductColorController> _logger;
+    private readonly ProductColorService _productColorService;
 
-    public InvoiceController(ILogger<InvoiceController> logger, InvoiceService invoiceService)
+    public ProductColorController(ILogger<ProductColorController> logger, ProductColorService productColorService)
     {
         _logger = logger;
-        _invoiceService = invoiceService;
+        _productColorService = productColorService;
     }
 
     [HttpGet]
@@ -27,33 +28,33 @@ public class InvoiceController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _invoiceService.GetInvoiceForFeed()
+            ResponseData = _productColorService.GetProductColorForFeed()
         };
     }
 
     [HttpPost]
     [ValidateModel]
     [Route("/api/invoices")]
-    public ResponseDto Post([FromBody] CreateInvoiceRequestDto dto)
+    public ResponseDto Post([FromBody] CreateProductColorsRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an invoice",
-            ResponseData = _invoiceService.CreateInvoice(dto.account_id, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
+            ResponseData = _productColorService.CreateProductColor(dto.product_id, dto.color_name, dto.color_code, dto.inventory, dto.total, dto.image_url1, dto.image_url2, dto.image_url3, dto.image_url4, dto.image_url5)
         };
     }
 
     [HttpPut]
     [ValidateModel]
     [Route("/api/invoices/{id}")]
-    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateInvoiceRequestDto dto)
+    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateProductColorsRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _invoiceService.UpdateInvoice(id, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
+            ResponseData = _productColorService.UpdateProductColor(id, dto.color_name, dto.color_code, dto.inventory, dto.total, dto.image_url1, dto.image_url2, dto.image_url3, dto.image_url4, dto.image_url5)
         };
     }
 
@@ -61,7 +62,7 @@ public class InvoiceController : ControllerBase
     [Route("/api/invoices/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
-        _invoiceService.DeleteInvoice(id);
+        _productColorService.DeleteProductColor(id);
         return new ResponseDto()
         {
             MessageToClient = "Successfully deleted"

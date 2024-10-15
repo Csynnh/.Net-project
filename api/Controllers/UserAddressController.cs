@@ -2,21 +2,22 @@ using System.ComponentModel.DataAnnotations;
 using api.CustomDataAnnotations;
 using api.Filters;
 using api.TransferModels;
+using infrastructure.DataModels;
 using infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using service;
 
 namespace library.Controllers;
 
-public class InvoiceController : ControllerBase
+public class UserAddressController : ControllerBase
 {
-    private readonly ILogger<InvoiceController> _logger;
-    private readonly InvoiceService _invoiceService;
+    private readonly ILogger<UserAddressController> _logger;
+    private readonly UserAddressService _userAddressService;
 
-    public InvoiceController(ILogger<InvoiceController> logger, InvoiceService invoiceService)
+    public UserAddressController(ILogger<UserAddressController> logger, UserAddressService userAddressService)
     {
         _logger = logger;
-        _invoiceService = invoiceService;
+        _userAddressService = userAddressService;
     }
 
     [HttpGet]
@@ -27,33 +28,33 @@ public class InvoiceController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _invoiceService.GetInvoiceForFeed()
+            ResponseData = _userAddressService.GetUserAddressForFeed()
         };
     }
 
     [HttpPost]
     [ValidateModel]
     [Route("/api/invoices")]
-    public ResponseDto Post([FromBody] CreateInvoiceRequestDto dto)
+    public ResponseDto Post([FromBody] CreateUserAddressRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an invoice",
-            ResponseData = _invoiceService.CreateInvoice(dto.account_id, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
+            ResponseData = _userAddressService.CreateUserAddress(dto.account_id, dto.address)
         };
     }
 
     [HttpPut]
     [ValidateModel]
     [Route("/api/invoices/{id}")]
-    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateInvoiceRequestDto dto)
+    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateUserAddressRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _invoiceService.UpdateInvoice(id, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
+            ResponseData = _userAddressService.UpdateUserAddress(id, dto.address)
         };
     }
 
@@ -61,7 +62,7 @@ public class InvoiceController : ControllerBase
     [Route("/api/invoices/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
-        _invoiceService.DeleteInvoice(id);
+        _userAddressService.DeleteUserAddress(id);
         return new ResponseDto()
         {
             MessageToClient = "Successfully deleted"
