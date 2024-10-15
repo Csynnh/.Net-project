@@ -20,7 +20,7 @@ public class CustomerReviewController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/reviews")]
+    [Route("/api/customer_reviews")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
@@ -33,7 +33,7 @@ public class CustomerReviewController : ControllerBase
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/reviews")]
+    [Route("/api/customer_reviews")]
     public ResponseDto Post([FromBody] CreateCustomerReviewRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
@@ -46,7 +46,7 @@ public class CustomerReviewController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/reviews/{id}")]
+    [Route("/api/customer_reviews/{id}")]
     public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateCustomerReviewRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
@@ -58,7 +58,7 @@ public class CustomerReviewController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/reviews/{id}")]
+    [Route("/api/customer_reviews/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
         _customerReviewService.DeleteCustomerReview(id);

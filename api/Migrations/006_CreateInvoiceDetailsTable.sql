@@ -1,3 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE SCHEMA IF NOT EXISTS noir;
+
 CREATE TABLE IF NOT EXISTS noir.InvoiceDetails (
     invoice_id UUID NOT NULL,
     product_id UUID NOT NULL,

@@ -21,7 +21,7 @@ public class ContactHistoryController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/invoices")]
+    [Route("/api/contact_histories")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
@@ -34,7 +34,7 @@ public class ContactHistoryController : ControllerBase
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/invoices")]
+    [Route("/api/contact_histories")]
     public ResponseDto Post([FromBody] CreateContactHistoryRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
@@ -47,7 +47,7 @@ public class ContactHistoryController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/contact_histories/{id}")]
     public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateContactHistoryRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
@@ -59,7 +59,7 @@ public class ContactHistoryController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/contact_histories/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
         _contactService.DeleteContactHistory(id);

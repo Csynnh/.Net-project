@@ -20,7 +20,7 @@ public class InvoiceDetailController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/invoicedetails")]
+    [Route("/api/invoice_details")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
@@ -33,7 +33,7 @@ public class InvoiceDetailController : ControllerBase
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/invoicedetails")]
+    [Route("/api/invoice_details")]
     public ResponseDto Post([FromBody] CreateInvoiceDetailRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
@@ -46,7 +46,7 @@ public class InvoiceDetailController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/invoicedetails")]
+    [Route("/api/invoice_details")]
     public ResponseDto Put([FromBody] UpdateInvoiceDetailRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
@@ -58,7 +58,7 @@ public class InvoiceDetailController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/invoicedetails/{invoices_id }/{product_id}")]
+    [Route("/api/invoice_details/{invoices_id }/{product_id}")]
     public ResponseDto Delete([FromRoute] Guid invoices_id , [FromRoute] Guid product_id)
     {
         _invoiceDetailService.DeleteInvoiceDetail(invoices_id , product_id);

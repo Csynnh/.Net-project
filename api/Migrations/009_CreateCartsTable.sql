@@ -1,6 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE IF NOT EXISTS Carts (
+CREATE SCHEMA IF NOT EXISTS noir;
+
+CREATE TABLE IF NOT EXISTS noir.Carts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     account_id UUID NOT NULL REFERENCES Accounts(id),
     product_id UUID NOT NULL REFERENCES Products(id),

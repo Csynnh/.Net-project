@@ -21,7 +21,7 @@ public class UserAddressController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/invoices")]
+    [Route("/api/user_addresses")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
@@ -34,7 +34,7 @@ public class UserAddressController : ControllerBase
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/invoices")]
+    [Route("/api/user_addresses")]
     public ResponseDto Post([FromBody] CreateUserAddressRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
@@ -47,7 +47,7 @@ public class UserAddressController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/user_addresses/{id}")]
     public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateUserAddressRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
@@ -59,7 +59,7 @@ public class UserAddressController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/user_addresses/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
         _userAddressService.DeleteUserAddress(id);

@@ -4,7 +4,7 @@ namespace api.TransferModels;
 
 public class UpdateBookRequestDto
 {
-    public int BookId { get; set; }
+    public Guid BookId { get; set; }
     public string BookTitle { get; set; } = string.Empty;
     public string Author { get; set; } = string.Empty;
     public string CoverImgUrl { get; set; } = string.Empty;

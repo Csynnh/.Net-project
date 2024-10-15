@@ -21,7 +21,7 @@ public class CartController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/invoices")]
+    [Route("/api/carts")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
@@ -34,7 +34,7 @@ public class CartController : ControllerBase
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/invoices")]
+    [Route("/api/carts")]
     public ResponseDto Post([FromBody] CreateCartsRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
@@ -47,7 +47,7 @@ public class CartController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/carts/{id}")]
     public ResponseDto Put([FromRoute] Guid id, [FromBody] CreateCartsRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
@@ -59,7 +59,7 @@ public class CartController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/carts/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
         _cartService.DeleteCart(id);

@@ -67,7 +67,7 @@ public class BookController : ControllerBase
 
     [HttpDelete]
     [Route("/api/books/{bookId}")]
-    public ResponseDto Delete([FromRoute] int bookId)
+    public ResponseDto Delete([FromRoute] Guid bookId)
     {
         _bookService.DeleteBook(bookId);
         return new ResponseDto()

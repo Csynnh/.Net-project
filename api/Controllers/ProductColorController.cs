@@ -21,7 +21,7 @@ public class ProductColorController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/invoices")]
+    [Route("/api/product_colors")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
@@ -34,7 +34,7 @@ public class ProductColorController : ControllerBase
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/invoices")]
+    [Route("/api/product_colors")]
     public ResponseDto Post([FromBody] CreateProductColorsRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
@@ -47,7 +47,7 @@ public class ProductColorController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/product_colors/{id}")]
     public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateProductColorsRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
@@ -59,7 +59,7 @@ public class ProductColorController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/invoices/{id}")]
+    [Route("/api/product_colors/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
         _productColorService.DeleteProductColor(id);
