@@ -31,6 +31,30 @@ public class ProductController : ControllerBase
         };
     }
 
+    [HttpGet]
+    [Route("/api/products_for_homepage")]
+    public ResponseDto GetProductForHomePage()
+    {
+        HttpContext.Response.StatusCode = 200;
+        return new ResponseDto()
+        {
+            MessageToClient = "Successfully fetched",
+            ResponseData = _productService.GetProductForHomePage()
+        };
+    }
+
+    [HttpGet]
+    [Route("/api/products_for_item_detail_page, {id}")]
+    public ResponseDto GetProductForItemDetailPage([FromRoute] Guid id)
+    {
+        HttpContext.Response.StatusCode = 200;
+        return new ResponseDto()
+        {
+            MessageToClient = "Successfully fetched",
+            ResponseData = _productService.GetProductForItemDetailPage(id)
+        };
+    }
+
     [HttpPost]
     [ValidateModel]
     [Route("/api/products")]

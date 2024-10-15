@@ -29,12 +29,12 @@ public class BookService
         return _bookRepository.CreateBook(bookTitle, publisher, coverImgUrl, author);
     }
 
-    public Book UpdateBook(string bookTitle, int bookId, string publisher, string coverImgUrl, string author)
+    public Book UpdateBook(string bookTitle, Guid bookId, string publisher, string coverImgUrl, string author)
     {
         return _bookRepository.UpdateBook(bookTitle, bookId, publisher, coverImgUrl, author);
     }
 
-    public void DeleteBook(int bookId)
+    public void DeleteBook(Guid bookId)
     {
         
         var result = _bookRepository.DeleteBook(bookId);

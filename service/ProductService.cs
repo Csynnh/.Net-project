@@ -19,6 +19,16 @@ public class ProductService
         return _productRepository.GetProductForFeed();
     }
 
+    public IEnumerable<Product> GetProductForHomePage()
+    {
+        return _productRepository.GetProductForHomePage();
+    }
+
+    public IEnumerable<Product> GetProductForItemDetailPage(Guid product_id)
+    {
+        return _productRepository.GetProductForItemDetailPage(product_id);
+    }
+
     public Product CreateProduct(string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
     {
         return _productRepository.CreateProduct(prod_name, pro_desc, price, width, height, type);
