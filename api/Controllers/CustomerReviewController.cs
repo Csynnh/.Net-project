@@ -27,7 +27,7 @@ public class CustomerReviewController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _customerReviewService.GetCustomerReviews()
+            ResponseData = _customerReviewService.GetCustomerReviewForFeed()
         };
     }
 

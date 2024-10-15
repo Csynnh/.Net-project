@@ -13,4 +13,5 @@ public class CreateInvoiceRequestDto
     public string status { get; set; } = "Đang xử lý";  
     public Checkout_method checkout_method { get; set; }
     public Shipping_method shipping_method { get; set; }
+
 }
