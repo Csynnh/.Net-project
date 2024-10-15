@@ -14,22 +14,22 @@ public class ProductService
         _productRepository = productRepository;
     }
 
-    public IEnumerable<Product> GetProducts()
+    public IEnumerable<Product> GetProductForFeed()
     {
-        return _productRepository.GetProducts();
+        return _productRepository.GetProductForFeed();
     }
 
-    public Product CreateProduct(string name, string desc, decimal price, int inventory, string image_url)
+    public Product CreateProduct(string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
     {
-        return _productRepository.CreateProduct(name, desc, price, inventory, image_url);
+        return _productRepository.CreateProduct(prod_name, pro_desc, price, width, height, type);
     }
 
-    public Product UpdateProduct(int id, string name, string desc, decimal price, int inventory, string image_url)
+    public Product UpdateProduct(Guid productId, string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
     {
-        return _productRepository.UpdateProduct(id, name, desc, price, inventory, image_url);
+        return _productRepository.UpdateProduct(productId, prod_name, pro_desc, price, width, height, type);
     }
 
-    public void DeleteProduct(int id)
+    public void DeleteProduct(Guid id)
     {
         var result = _productRepository.DeleteProduct(id);
         if (!result)

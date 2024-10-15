@@ -15,9 +15,9 @@ public class AccountService
         _accountRepository = accountRepository;
     }
 
-    public IEnumerable<Account> GetAccounts()
+    public IEnumerable<Account> GetAccountForFeed()
     { 
-        return _accountRepository.GetAllAccounts();
+        return _accountRepository.GetAccountForFeed();
     }
 
     public Account CreateAccount(string username , string password , string name, string email, string phone_number, Role role )

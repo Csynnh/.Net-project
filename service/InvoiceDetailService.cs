@@ -14,24 +14,24 @@ public class InvoiceDetailService
         _invoiceDetailRepository = invoiceDetailRepository;
     }
 
-    public IEnumerable<InvoiceDetail> GetInvoiceDetails()
+    public IEnumerable<InvoiceDetail> GetInvoiceDetailForFeed()
     {
-        return _invoiceDetailRepository.GetInvoiceDetails();
+        return _invoiceDetailRepository.GetInvoiceDetailForFeed();
     }
 
-    public InvoiceDetail CreateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
+    public InvoiceDetail CreateInvoiceDetail(Guid invoiceId, Guid productId, int amount, decimal price)
     {
-        return _invoiceDetailRepository.CreateInvoiceDetail(invoices_id , product_id, amount, price);
+        return _invoiceDetailRepository.CreateInvoiceDetail(invoiceId , productId, amount, price);
     }
 
-    public InvoiceDetail UpdateInvoiceDetail(int invoices_id , int product_id, int amount, decimal price)
+    public InvoiceDetail UpdateInvoiceDetail(Guid invoiceId, Guid productId, int amount, decimal price)
     {
-        return _invoiceDetailRepository.UpdateInvoiceDetail(invoices_id , product_id, amount, price);
+        return _invoiceDetailRepository.UpdateInvoiceDetail(invoiceId , productId, amount, price);
     }
 
-    public void DeleteInvoiceDetail(int invoices_id , int product_id)
+    public void DeleteInvoiceDetail(Guid invoiceId, Guid productId)
     {
-        var result = _invoiceDetailRepository.DeleteInvoiceDetail(invoices_id , product_id);
+        var result = _invoiceDetailRepository.DeleteInvoiceDetail(invoiceId , productId);
         if (!result)
         {
             throw new Exception("Could not delete invoice detail");

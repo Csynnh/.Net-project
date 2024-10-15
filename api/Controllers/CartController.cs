@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using api.CustomDataAnnotations;
 using api.Filters;
 using api.TransferModels;
+using infrastructure.DataModels;
 using infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using service;
@@ -11,12 +12,12 @@ namespace library.Controllers;
 public class CartController : ControllerBase
 {
     private readonly ILogger<CartController> _logger;
-    private readonly CartService _invoiceService;
+    private readonly CartService _cartService;
 
-    public CartController(ILogger<CartController> logger, CartService invoiceService)
+    public CartController(ILogger<CartController> logger, CartService cartService)
     {
         _logger = logger;
-        _invoiceService = invoiceService;
+        _cartService = cartService;
     }
 
     [HttpGet]
@@ -27,33 +28,33 @@ public class CartController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _invoiceService.GetInvoices()
+            ResponseData = _cartService.GetCartForFeed()
         };
     }
 
     [HttpPost]
     [ValidateModel]
     [Route("/api/invoices")]
-    public ResponseDto Post([FromBody] CreateInvoiceRequestDto dto)
+    public ResponseDto Post([FromBody] CreateCartsRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
         return new ResponseDto()
         {
             MessageToClient = "Successfully created an invoice",
-            ResponseData = _invoiceService.CreateInvoice(dto.account_id , dto.created_date, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
+            ResponseData = _cartService.CreateCart(dto.account_id, dto.product_id, dto.quantity)
         };
     }
 
     [HttpPut]
     [ValidateModel]
     [Route("/api/invoices/{id}")]
-    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateInvoiceRequestDto dto)
+    public ResponseDto Put([FromRoute] Guid id, [FromBody] CreateCartsRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
         return new ResponseDto()
         {
             MessageToClient = "Successfully updated",
-            ResponseData = _invoiceService.UpdateInvoice(id, dto.account_id , dto.created_date, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
+            ResponseData = _cartService.UpdateCart(id, dto.quantity)
         };
     }
 
@@ -61,7 +62,7 @@ public class CartController : ControllerBase
     [Route("/api/invoices/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
-        _invoiceService.DeleteInvoice(id);
+        _cartService.DeleteCart(id);
         return new ResponseDto()
         {
             MessageToClient = "Successfully deleted"

@@ -1,6 +1,6 @@
 namespace infrastructure.DataModels;
 
-public class CartFeedItem
+public class CartFeedQuery
 {
     public Guid cart_id  { get; set; }  // Primary Key, Foreign Key, liên kết tới bảng Hóa đơn
     public Guid account_id  { get; set; }  // Primary Key, Foreign Key, liên kết tới bảng Hóa đơn

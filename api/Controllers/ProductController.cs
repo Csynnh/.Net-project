@@ -27,7 +27,7 @@ public class ProductController : ControllerBase
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _productService.GetProducts()
+            ResponseData = _productService.GetProductForFeed()
         };
     }
 
@@ -47,7 +47,7 @@ public class ProductController : ControllerBase
     [HttpPut]
     [ValidateModel]
     [Route("/api/products/{id}")]
-    public ResponseDto Put([FromRoute] int id, [FromBody] UpdateProductRequestDto dto)
+    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateProductRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
         return new ResponseDto()
@@ -59,7 +59,7 @@ public class ProductController : ControllerBase
 
     [HttpDelete]
     [Route("/api/products/{id}")]
-    public ResponseDto Delete([FromRoute] int id)
+    public ResponseDto Delete([FromRoute] Guid id)
     {
         _productService.DeleteProduct(id);
         return new ResponseDto()

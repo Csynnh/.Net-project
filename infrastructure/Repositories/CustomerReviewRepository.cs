@@ -1,9 +1,11 @@
 using Dapper;
 using infrastructure.DataModels;
 using infrastructure.EnumVariables;
+using infrastructure.QueryModels;
 using Npgsql;
 
 namespace infrastructure.Repositories;
+
 public class CustomerReviewRepository
 {
     private NpgsqlDataSource _dataSource;
@@ -13,11 +15,15 @@ public class CustomerReviewRepository
         _dataSource = dataSource;
     }
 
-    public IEnumerable<CustomerReview> GetAllCustomerReviews()
+    public IEnumerable<CustomerReview> GetCustomerReviewForFeed()
     {
-        var sql = @"
-SELECT id as Id, account_id as AccountId, product_id as ProductId, content as Content, 
-       vote as Vote, created_at as CreatedAt
+        var sql = $@"
+SELECT id as {nameof(CustomerReviewFeedQuery.id)}, 
+       account_id as {nameof(CustomerReviewFeedQuery.account_id)}, 
+       product_id as {nameof(CustomerReviewFeedQuery.product_id)}, 
+       content as {nameof(CustomerReviewFeedQuery.content)}, 
+       vote as {nameof(CustomerReviewFeedQuery.vote)}, 
+       created_at as {nameof(CustomerReviewFeedQuery.created_date)}
 FROM customerreviews;
 ";
         using (var conn = _dataSource.OpenConnection())
@@ -26,32 +32,40 @@ FROM customerreviews;
         }
     }
 
-    public CustomerReview CreateCustomerReview(Guid accountId, Guid productId, string content, Rating vote, DateTime created_at)
+    public CustomerReview CreateCustomerReview(Guid accountId, Guid productId, string content, Rating vote, DateTime createdAt)
     {
-        var sql = @"
-INSERT INTO customerreviews (account_id, product_id, content, vote)
-VALUES (@accountId, @productId, @content, @vote)
-RETURNING id as Id, account_id as AccountId, product_id as ProductId, 
-          content as Content, vote as Vote, created_at as CreatedAt;
+        var sql = $@"
+INSERT INTO customerreviews (account_id, product_id, content, vote, created_at)
+VALUES (@accountId, @productId, @content, @vote, @createdAt)
+RETURNING id as {nameof(CustomerReview.id)}, 
+          account_id as {nameof(CustomerReview.account_id)}, 
+          product_id as {nameof(CustomerReview.product_id)}, 
+          content as {nameof(CustomerReview.content)}, 
+          vote as {nameof(CustomerReview.vote)}, 
+          created_at as {nameof(CustomerReview.created_date)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<CustomerReview>(sql, new { accountId, productId, content, vote, created_at });
+            return conn.QueryFirst<CustomerReview>(sql, new { accountId, productId, content, vote, createdAt });
         }
     }
 
-    public CustomerReview UpdateCustomerReview(Guid reviewId, string content, Rating vote, DateTime create_at)
+    public CustomerReview UpdateCustomerReview(Guid reviewId, string content, Rating vote, DateTime createdAt)
     {
-        var sql = @"
+        var sql = $@"
 UPDATE customerreviews
-SET content = @content, vote = @vote
+SET content = @content, vote = @vote, created_at = @createdAt
 WHERE id = @reviewId
-RETURNING id as Id, account_id as AccountId, product_id as ProductId, 
-          content as Content, vote as Vote, created_at as CreatedAt;
+RETURNING id as {nameof(CustomerReview.id)}, 
+          account_id as {nameof(CustomerReview.account_id)}, 
+          product_id as {nameof(CustomerReview.product_id)}, 
+          content as {nameof(CustomerReview.content)}, 
+          vote as {nameof(CustomerReview.vote)}, 
+          created_at as {nameof(CustomerReview.created_date)};
 ";
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<CustomerReview>(sql, new { reviewId, content, vote, create_at });
+            return conn.QueryFirst<CustomerReview>(sql, new { reviewId, content, vote, createdAt });
         }
     }
 
