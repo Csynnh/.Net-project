@@ -30,6 +30,15 @@ builder.Services.AddSingleton<ProductRepository>();
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddSingleton<InvoiceDetailRepository>();
 builder.Services.AddSingleton<InvoiceDetailService>();
+builder.Services.AddSingleton<ProductColorRepository>();
+builder.Services.AddSingleton<ProductColorService>();
+builder.Services.AddSingleton<CartRepository>();
+builder.Services.AddSingleton<CartService>();
+builder.Services.AddSingleton<ContactHistoryRepository>();
+builder.Services.AddSingleton<ContactService>();
+builder.Services.AddSingleton<UserAddressRepository>();
+builder.Services.AddSingleton<UserAddressService>();
+
 
 builder.Services.AddSingleton<MigrationRunner>();
 
