@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS noir.ProductColors (
     id SERIAL PRIMARY KEY,
-    product_id UUID REFERENCES Products(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES noir.Products(id) ON DELETE CASCADE,
     color_name VARCHAR(255) NOT NULL,
     color_code VARCHAR(7) NOT NULL,
     inventory INT NOT NULL,

@@ -77,9 +77,9 @@ WITH ProductInfo AS (
         pc.image4_url,
         pc.image5_url
     FROM 
-        Products p
+        noir.Products p
     JOIN 
-        ProductColors pc ON p.id = pc.product_id
+        noir.ProductColors pc ON p.id = pc.product_id
     WHERE 
         p.id = {product_id}
 ),
@@ -88,9 +88,9 @@ ReviewInfo AS (
         cr.*,
         a.username AS reviewer_username
     FROM 
-        CustomerReviews cr
+        noir.CustomerReviews cr
     JOIN 
-        Accounts a ON cr.account_id = a.id
+        noir.Accounts a ON cr.account_id = a.id
     WHERE 
         cr.product_id = {product_id}
 )
@@ -102,7 +102,7 @@ SELECT
     ri.vote AS review_vote,
     ri.created_at AS review_date
 FROM 
-    ProductInfo pi
+    noir.ProductInfo pi
 LEFT JOIN 
     ReviewInfo ri ON pi.id = {product_id}
 ORDER BY 
@@ -116,7 +116,7 @@ ORDER BY
         public Product CreateProduct(string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
         {
             var sql = $@"
-INSERT INTO products (prod_name, prod_desc, price, wid, hei, type)
+INSERT INTO noir.products (prod_name, prod_desc, price, wid, hei, type)
 VALUES (@prod_name, @pro_desc, @price, @width, @height, @type)
 RETURNING id as {nameof(Product.id)}, 
           prod_name as {nameof(Product.prod_name)}, 
@@ -135,7 +135,7 @@ RETURNING id as {nameof(Product.id)},
         public Product UpdateProduct(Guid productId, string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
         {
             var sql = $@"
-UPDATE products
+UPDATE noir.products
 SET prod_name = @prod_name, 
     prod_desc = @pro_desc, 
     price = @price, 
@@ -159,7 +159,7 @@ RETURNING id as {nameof(Product.id)},
 
         public bool DeleteProduct(Guid productId)
         {
-            var sql = @"DELETE FROM products WHERE id = @productId;";
+            var sql = @"DELETE FROM noir.products WHERE id = @productId;";
             using (var conn = _dataSource.OpenConnection())
             {
                 return conn.Execute(sql, new { productId }) == 1;
@@ -168,7 +168,7 @@ RETURNING id as {nameof(Product.id)},
 
         public bool DoesProductExistWithName(string prod_name)
         {
-            var sql = @"SELECT COUNT(*) FROM products WHERE prod_name = @prod_name;";
+            var sql = @"SELECT COUNT(*) FROM noir.products WHERE prod_name = @prod_name;";
             using (var conn = _dataSource.OpenConnection())
             {
                 return conn.ExecuteScalar<int>(sql, new { prod_name }) > 0;
