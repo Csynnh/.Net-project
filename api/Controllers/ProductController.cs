@@ -3,20 +3,24 @@ using api.CustomDataAnnotations;
 using api.Filters;
 using api.TransferModels;
 using infrastructure.Repositories;
+using infrastructure.DataModels;
 using Microsoft.AspNetCore.Mvc;
 using service;
+using Amazon.S3;
 
 namespace library.Controllers;
 
 public class ProductController : ControllerBase
 {
     private readonly ILogger<ProductController> _logger;
+    private readonly IAmazonS3 _s3Client;
     private readonly ProductService _productService;
 
-    public ProductController(ILogger<ProductController> logger, ProductService productService)
+    public ProductController(ILogger<ProductController> logger, ProductService productService, IAmazonS3 s3Client)
     {
         _logger = logger;
         _productService = productService;
+        _s3Client = s3Client;
     }
 
     [HttpGet]
@@ -58,13 +62,13 @@ public class ProductController : ControllerBase
     [HttpPost]
     [ValidateModel]
     [Route("/api/products")]
-    public ResponseDto Post([FromBody] CreateProductRequestDto dto)
+    public async Task<ResponseDto> Post([FromForm] CreateProductRequestDto dto, IFormFile image)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
         return new ResponseDto()
         {
             MessageToClient = "Successfully created a product",
-            ResponseData = _productService.CreateProduct(dto.name, dto.desc, dto.price, dto.width, dto.height, dto.type)
+            ResponseData = await _productService.CreateProduct(dto.name, dto.desc, dto.price, dto.size, dto.type, dto.inventory, dto.details, image, dto.color, _s3Client)
         };
     }
 

@@ -1,4 +1,3 @@
-
 namespace infrastructure.QueryModels;
 
 public class ProductFeedQuery
