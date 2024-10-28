@@ -1,9 +1,0 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE SCHEMA IF NOT EXISTS noir;
-
-CREATE TABLE IF NOT EXISTS noir.UserAddresses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    account_id UUID REFERENCES noir.Accounts(id) ON DELETE CASCADE,
-    address TEXT NOT NULL
-);

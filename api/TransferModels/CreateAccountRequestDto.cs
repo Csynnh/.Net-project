@@ -12,5 +12,5 @@ public class CreateAccountRequestDto
     public string name  { get; set; } = string.Empty;
     public string email  { get; set; } = string.Empty;
     public string phone_number  { get; set; } = string.Empty;
-    public Role role  { get; set; } = Role.user;
+    public string role  { get; set; } = "User";
 }

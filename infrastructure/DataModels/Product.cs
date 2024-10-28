@@ -5,7 +5,7 @@ namespace infrastructure.DataModels;
 
 public class Product
 {
-    public Guid id  { get; set; }// Primary Key
+    public Guid id { get; set; }// Primary Key
     public string prod_name { get; set; } = string.Empty;  // Tên của sản phẩm
     public string pro_desc { get; set; } = string.Empty;  // Mô tả sản phẩm
     public decimal price { get; set; }  // Giá của sản phẩm
@@ -49,4 +49,23 @@ public class CreateProductRequestDto
     public ProductDetails details { get; set; } = new ProductDetails();
     // public IFormFile image { get; set; }
     public string color { get; set; } = string.Empty;
+}
+
+public class CreateProductModel
+{
+    public string ProductName { get; set; }
+    public string ProductDescription { get; set; }
+    public decimal Price { get; set; }
+    public string Size { get; set; }
+    public string Type { get; set; }
+    public int Inventory { get; set; }
+    public ProductDetails Details { get; set; }
+    public ProductImages Images { get; set; }
+    public string Color { get; set; }
+}
+
+public class ProductImages
+{
+    public IFormFile ImageThumbnail { get; set; }
+    public List<IFormFile> AdditionalImages { get; set; }
 }

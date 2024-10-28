@@ -1,178 +1,300 @@
+using System;
+using System.Text.Json;
 using Dapper;
-using infrastructure.DataModels;
 using infrastructure.QueryModels;
 using Npgsql;
+public interface IProductRepository
+{
+    Task AddProductAsync(ProductModel product);
+    Task<ProductModelResponse> GetProductByIdAsync(Guid id);
+    Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId);
+    Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
+    Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status);
+    Task<bool> IsProductExistAsync(string name, string color, string size);
+}
+
 
 namespace infrastructure.Repositories
 {
-    public class ProductRepository
+    public class ProductRepository : IProductRepository
     {
-        private NpgsqlDataSource _dataSource;
+        private readonly NpgsqlDataSource _dataSource;
 
         public ProductRepository(NpgsqlDataSource dataSource)
         {
             _dataSource = dataSource;
         }
 
-        public IEnumerable<Product> GetProductForFeed()
+        public async Task<ProductModelResponse> GetProductByIdAsync(Guid id)
         {
-            var sql = $@"
-SELECT id as {nameof(ProductFeedQuery.id)}, 
-       prod_name as {nameof(ProductFeedQuery.prod_name)}, 
-       prod_desc as {nameof(ProductFeedQuery.pro_desc)}, 
-       price as {nameof(ProductFeedQuery.price)}, 
-       wid as {nameof(ProductFeedQuery.width)}, 
-       hei as {nameof(ProductFeedQuery.height)}, 
-       type as {nameof(ProductFeedQuery.type)}
-FROM products;
-";
-            using (var conn = _dataSource.OpenConnection())
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse>(@"
+            SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+                jsonb_agg(jsonb_build_object(
+                    'Images', pv.Images::json,
+                    'Inventory', pv.Inventory,
+                    'Size', s.Size,
+                    'Color', c.Color
+                )) AS Variants,
+                t.Type
+            FROM NOIRTEST.Products p
+            JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
+            JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
+            JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
+            WHERE p.Id = @Id
+            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { Id = id });
+            var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
+            var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
+            product.Variants = productVariant;
+            product.Details = productDetails;
+            return product;
+        }
+
+        public async Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var products = await conn.QueryAsync<ProductModelResponse>(@"
+            SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+                jsonb_agg(jsonb_build_object(
+                    'Images', pv.Images::json,
+                    'Inventory', pv.Inventory,
+                    'Size', s.Size,
+                    'Color', c.Color
+                )) AS Variants,
+                t.Type
+            FROM NOIRTEST.Products p
+            JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
+            JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
+            JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
+            WHERE t.Id = @TypeId
+            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { TypeId = typeId });
+            foreach (var product in products)
             {
-                return conn.Query<Product>(sql);
+                var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
+                var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
+                product.Variants = productVariant;
+                product.Details = productDetails;
+            }
+            return products;
+        }
+
+        public async Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync()
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var products = await conn.QueryAsync<ProductModelResponse>(@"
+            SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+                jsonb_agg(jsonb_build_object(
+                    'Images', pv.Images::json,
+                    'Inventory', pv.Inventory,
+                    'Size', s.Size,
+                    'Color', c.Color
+                )) AS Variants,
+                t.Type
+            FROM NOIRTEST.Products p
+            JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
+            JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
+            JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
+            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type");
+            foreach (var product in products)
+            {
+                var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
+                var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
+                product.Variants = productVariant;
+                product.Details = productDetails;
+            }
+            var groupedProducts = products.GroupBy(p => new { p.Type })
+                                            .Select(g => new ListProductByTypeResponse
+                                            {
+                                                Type = g.Key.Type,
+                                                Products = g.ToList()
+                                            });
+            Console.WriteLine(groupedProducts);
+            return groupedProducts;
+        }
+
+
+        public async Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var products = await conn.QueryAsync<ProductOrderResponse>(@"
+            SELECT
+                o.id AS orderId,
+                o.status AS orderStatus,
+                jsonb_agg(
+                    jsonb_build_object(
+                        'productName', p.name,
+                        'description', p.description,
+                        'price', od.price,
+                        'quantity', od.quantity,
+                        'variant', jsonb_build_object(
+                            'size', s.size,
+                            'color', c.color,
+                            'images', pv.images
+                        )
+                    )
+                ) AS products
+            FROM NOIRTEST.ORDERS o
+            JOIN NOIRTEST.ORDERDETAILS od ON o.id = od.order_id
+            JOIN NOIRTEST.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
+            JOIN NOIRTEST.PRODUCTS p ON pv.product_id = p.id
+            JOIN NOIRTEST.SIZES s ON pv.size_id = s.id
+            JOIN NOIRTEST.COLORS c ON pv.color_id = c.id
+            WHERE o.account_id = @AccountId AND o.status = @Status
+            GROUP BY o.id, o.status;", new { AccountId = accountId, Status = status });
+            foreach (var product in products)
+            {
+                var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
+                var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
+                product.Variants = productVariant;
+                product.Details = productDetails;
+            }
+            var groupedProducts = products.GroupBy(p => new { p.OrderStatus })
+                                            .Select(g => new ListProductByOderStatusResponse
+                                            {
+                                                OrderStatus = g.Key.OrderStatus,
+                                                Products = g.ToList()
+                                            });
+            Console.WriteLine(groupedProducts);
+            return groupedProducts;
+        }
+
+        public async Task AddProductAsync(ProductModel product)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            await using var cmd = new NpgsqlCommand("""
+            -- Insert the color if it does not exist
+            INSERT INTO NOIRTEST.Sizes (size)
+            VALUES (@Size)
+            ON CONFLICT (size)
+            WHERE ((size)::text = @Size::text) DO NOTHING;
+
+            -- Insert the color if it does not exist
+            INSERT INTO NOIRTEST.Colors (color)
+            VALUES (@Color)
+            ON CONFLICT (color)
+            WHERE ((color)::text = @Color::text) DO NOTHING;
+
+            -- Insert the type if it does not exist
+            INSERT INTO NOIRTEST.Types (type)
+            VALUES (@Type)
+            ON CONFLICT (type)
+            WHERE ((type)::text = @Type::text) DO NOTHING;
+
+            -- Insert the product and check if it already exists based on the name
+            INSERT INTO NOIRTEST.Products (name, description, price, type_id, inventory, details)
+            SELECT @Name, @Description, @Price, t.Id, @Inventory, @Details::json
+            FROM NOIRTEST.Types t
+            WHERE t.type = @Type
+            ON CONFLICT (Name)
+            WHERE ((Name)::text = @Name::text) DO NOTHING;
+
+            -- Insert the product variant
+            INSERT INTO NOIRTEST.ProductVariants (product_id, size_id, color_id, images, inventory)
+            SELECT p.Id, s.Id, c.Id, @Images::json, @Inventory
+            FROM NOIRTEST.Products p
+            JOIN NOIRTEST.Types t ON p.type_id = t.Id
+            JOIN NOIRTEST.Sizes s ON s.size = @Size
+            JOIN NOIRTEST.Colors c ON c.color = @Color
+            WHERE p.Name = @Name;
+            """, conn);
+
+            cmd.Parameters.AddWithValue("Name", product.Name);
+            cmd.Parameters.AddWithValue("Description", product.Description);
+            cmd.Parameters.AddWithValue("Price", product.Price);
+            cmd.Parameters.AddWithValue("Inventory", product.Inventory);
+            cmd.Parameters.AddWithValue("Details", product.Details);
+            cmd.Parameters.AddWithValue("Size", product.Size);
+            cmd.Parameters.AddWithValue("Color", product.Color);
+            cmd.Parameters.AddWithValue("Type", product.Type);
+            cmd.Parameters.AddWithValue("Images", product.Images);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+
+        /*
+        SELECT
+            o.id AS order_id,
+            o.status AS order_status,
+            o.created_at AS order_date,
+            od.quantity AS quantity,
+            od.price AS unit_price,
+            od.quantity * od.price AS total_price,
+            p.id AS product_id,
+            p.name AS product_name,
+            p.description AS product_description,
+            p.price AS product_price,
+            pv.size_id AS size_id,
+            s.size AS size,
+            pv.color_id AS color_id,
+            c.color AS color,
+            pv.images AS images
+        FROM
+            NOIRTEST.ORDERS o
+        JOIN
+            NOIRTEST.ORDERDETAILS od ON o.id = od.order_id
+        JOIN
+            NOIRTEST.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
+        JOIN
+            NOIRTEST.PRODUCTS p ON pv.product_id = p.id
+        LEFT JOIN
+            NOIRTEST.SIZES s ON pv.size_id = s.id
+        LEFT JOIN
+            NOIRTEST.COLORS c ON pv.color_id = c.id
+        WHERE
+            o.account_id = :account_id
+            AND o.status = :status
+        ORDER BY
+            o.created_at DESC;
+        */
+        // public async 
+
+        public async Task<bool> IsProductExistAsync(string name, string color, string size)
+        {
+            // Define the SQL query to check for existing products with the specified criteria
+            const string sql = @"
+        SELECT COUNT(*)
+        FROM NOIRTEST.PRODUCTS p
+        JOIN NOIRTEST.PRODUCTVARIANTS pv ON p.id = pv.product_id
+        JOIN NOIRTEST.COLORS c ON pv.color_id = c.id
+        JOIN NOIRTEST.SIZES s ON pv.size_id = s.id
+        WHERE p.name = @Name AND c.color = @Color AND s.size = @Size";
+
+            try
+            {
+                using (var connection = _dataSource.CreateConnection())
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = new NpgsqlCommand(sql, connection))
+                    {
+                        // Add parameters to prevent SQL injection
+                        command.Parameters.AddWithValue("@Name", name);
+                        command.Parameters.AddWithValue("@Color", color);
+                        command.Parameters.AddWithValue("@Size", size);
+
+                        // Execute the query and retrieve the count
+                        var count = await command.ExecuteScalarAsync();
+
+                        // Return true if at least one product exists, otherwise false
+                        if (count != null && count != DBNull.Value)
+                        {
+                            return Convert.ToInt32(count) > 0;
+                        }
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and return null
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
             }
         }
 
-        public IEnumerable<Product> GetProductForHomePage()
-        {
-             var sql = $@"
-            SELECT 
-    p.type AS product_type,
-    p.prod_name AS product_name,
-    p.price AS product_price,
-    pc.image1_url,
-    pc.image2_url,
-    pc.image3_url,
-    pc.image4_url,
-    pc.image5_url,
-    STRING_AGG(DISTINCT pc.color_code, ', ') AS color_codes
-FROM 
-    Products p
-LEFT JOIN 
-    ProductColors pc ON p.id = pc.product_id
-GROUP BY 
-    p.type, p.prod_name, p.price, pc.image1_url, pc.image2_url, pc.image3_url, pc.image4_url, pc.image5_url
-ORDER BY 
-    p.type, p.prod_name;";
-            using (var conn = _dataSource.OpenConnection())
-            {
-                return conn.Query<Product>(sql);
-            }
-        }
-
-        
-        public IEnumerable<Product> GetProductForItemDetailPage(Guid product_id)
-        {
-             var sql = $@"
-             
-WITH ProductInfo AS (
-    SELECT 
-        p.*,
-        pc.color_name,
-        pc.color_code,
-        pc.inventory,
-        pc.total,
-        pc.image1_url,
-        pc.image2_url,
-        pc.image3_url,
-        pc.image4_url,
-        pc.image5_url
-    FROM 
-        noir.Products p
-    JOIN 
-        noir.ProductColors pc ON p.id = pc.product_id
-    WHERE 
-        p.id = {product_id}
-),
-ReviewInfo AS (
-    SELECT 
-        cr.*,
-        a.username AS reviewer_username
-    FROM 
-        noir.CustomerReviews cr
-    JOIN 
-        noir.Accounts a ON cr.account_id = a.id
-    WHERE 
-        cr.product_id = {product_id}
-)
-SELECT 
-    pi.*,
-    ri.id AS review_id,
-    ri.reviewer_username,
-    ri.content AS review_content,
-    ri.vote AS review_vote,
-    ri.created_at AS review_date
-FROM 
-    noir.ProductInfo pi
-LEFT JOIN 
-    ReviewInfo ri ON pi.id = {product_id}
-ORDER BY 
-    pi.color_name, ri.created_at DESC;";
-            using (var conn = _dataSource.OpenConnection())
-            {
-                return conn.Query<Product>(sql);
-            }
-        }
-
-        public Product CreateProduct(string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
-        {
-            var sql = $@"
-INSERT INTO noir.products (prod_name, prod_desc, price, wid, hei, type)
-VALUES (@prod_name, @pro_desc, @price, @width, @height, @type)
-RETURNING id as {nameof(Product.id)}, 
-          prod_name as {nameof(Product.prod_name)}, 
-          prod_desc as {nameof(Product.pro_desc)}, 
-          price as {nameof(Product.price)}, 
-          wid as {nameof(Product.width)}, 
-          hei as {nameof(Product.height)}, 
-          type as {nameof(Product.type)};
-";
-            using (var conn = _dataSource.OpenConnection())
-            {
-                return conn.QueryFirst<Product>(sql, new { prod_name, pro_desc, price, width, height, type });
-            }
-        }
-
-        public Product UpdateProduct(Guid productId, string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
-        {
-            var sql = $@"
-UPDATE noir.products
-SET prod_name = @prod_name, 
-    prod_desc = @pro_desc, 
-    price = @price, 
-    wid = @width, 
-    hei = @height, 
-    type = @type
-WHERE id = @productId
-RETURNING id as {nameof(Product.id)}, 
-          prod_name as {nameof(Product.prod_name)}, 
-          prod_desc as {nameof(Product.pro_desc)}, 
-          price as {nameof(Product.price)}, 
-          wid as {nameof(Product.width)}, 
-          hei as {nameof(Product.height)}, 
-          type as {nameof(Product.type)};
-";
-            using (var conn = _dataSource.OpenConnection())
-            {
-                return conn.QueryFirst<Product>(sql, new { productId, prod_name, pro_desc, price, width, height, type });
-            }
-        }
-
-        public bool DeleteProduct(Guid productId)
-        {
-            var sql = @"DELETE FROM noir.products WHERE id = @productId;";
-            using (var conn = _dataSource.OpenConnection())
-            {
-                return conn.Execute(sql, new { productId }) == 1;
-            }
-        }
-
-        public bool DoesProductExistWithName(string prod_name)
-        {
-            var sql = @"SELECT COUNT(*) FROM noir.products WHERE prod_name = @prod_name;";
-            using (var conn = _dataSource.OpenConnection())
-            {
-                return conn.ExecuteScalar<int>(sql, new { prod_name }) > 0;
-            }
-        }
     }
 }

@@ -1,58 +1,95 @@
+using System.Text.Json;
 using Amazon.S3;
 using infrastructure.DataModels;
+using infrastructure.QueryModels;
 using infrastructure.Repositories;
-using Microsoft.AspNetCore.Http;
 
 namespace service;
 
-public class ProductService
+// IProductService.cs
+public interface IProductService
 {
-    private readonly ProductRepository _productRepository;
+    Task<string> CreateProductAsync(CreateProductModel ProductRequest, IAmazonS3 _s3Client);
+    Task<ProductModelResponse> GetProductByIdAsync(Guid id);
+    Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId);
+    Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string orderStatus);
+    Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
+}
 
-    public ProductService(ProductRepository productRepository)
+
+public class ProductService : IProductService
+{
+    private readonly ProductRepository _repository;
+
+    public ProductService(ProductRepository repository)
     {
-        _productRepository = productRepository;
+        _repository = repository;
     }
 
-    public IEnumerable<Product> GetProductForFeed()
+    public async Task<ProductModelResponse> GetProductByIdAsync(Guid id)
     {
-        return _productRepository.GetProductForFeed();
+        var response = await _repository.GetProductByIdAsync(id);
+        return response;
     }
 
-    public IEnumerable<Product> GetProductForHomePage()
+    public async Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId)
     {
-        return _productRepository.GetProductForHomePage();
+        var response = await _repository.ListProductByTypeIdAsync(typeId);
+        return response;
     }
 
-    public IEnumerable<Product> GetProductForItemDetailPage(Guid product_id)
+    public async Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync()
     {
-        return _productRepository.GetProductForItemDetailPage(product_id);
+        var response = await _repository.ListProductByTypeAsync();
+        return response;
     }
 
-    public async Task<string> CreateProduct(string prod_name, string pro_desc, decimal price, string size, string type, int inventory, ProductDetails details, IFormFile imageFile, string color, IAmazonS3 _s3Client)
+    public async Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string orderStatus)
     {
-        if (imageFile == null || imageFile.Length == 0)
-            throw new ArgumentException("No image uploaded.");
-
-        using var stream = imageFile.OpenReadStream();
-        var uploader = new S3Uploader(_s3Client);
-        var fileName = $"images/{imageFile.FileName}";
-        string image_url = await uploader.UploadImageAsync(imageFile);
-
-        return image_url;
+        var response = await _repository.ListProductByOderStatusAsync(accountId, orderStatus);
+        return response;
     }
-
-    public Product UpdateProduct(Guid productId, string prod_name, string pro_desc, decimal price, decimal width, decimal height, string type)
+    public async Task<string> CreateProductAsync(CreateProductModel ProductRequest, IAmazonS3 _s3Client)
     {
-        return _productRepository.UpdateProduct(productId, prod_name, pro_desc, price, width, height, type);
-    }
-
-    public void DeleteProduct(Guid id)
-    {
-        var result = _productRepository.DeleteProduct(id);
-        if (!result)
+        // Check if the product already exists based on your criteria
+        var existingProduct = await _repository.IsProductExistAsync(ProductRequest.ProductName, ProductRequest.Color, ProductRequest.Size);
+        if (existingProduct)
         {
-            throw new Exception("Could not delete product");
+            throw new InvalidOperationException($"Product with name: '{ProductRequest.ProductName}' - color: '{ProductRequest.Color}' - size '{ProductRequest.Size}' already exists");
         }
+
+        // Handle image upload to S3
+        var uploader = new S3Uploader(_s3Client);
+        string image_url = await uploader.UploadImageAsync(ProductRequest.Images.ImageThumbnail);
+        List<string> additionalImageUrls = new List<string>();
+        foreach (var additionalImage in ProductRequest.Images.AdditionalImages)
+        {
+            additionalImageUrls.Add(await uploader.UploadImageAsync(additionalImage));
+        }
+
+        string images = JsonSerializer.Serialize(new ProductImagesModel() {
+                ImageThumbnail = image_url,
+                AdditionalImages = additionalImageUrls
+            }
+        );
+
+        ProductModel productModel = new ProductModel()
+        {
+            Name = ProductRequest.ProductName,
+            Description = ProductRequest.ProductDescription,
+            Size = ProductRequest.Size.ToUpper(),
+            Color = ProductRequest.Color.ToUpper(),
+            Type = ProductRequest.Type.ToUpper(),
+            Price = ProductRequest.Price,
+            Inventory = ProductRequest.Inventory,
+            Details = JsonSerializer.Serialize(ProductRequest.Details),
+            Images = images
+        };
+
+
+
+        await _repository.AddProductAsync(productModel);
+        return $"Product created successfully with name: {ProductRequest.ProductName}";
     }
+
 }
