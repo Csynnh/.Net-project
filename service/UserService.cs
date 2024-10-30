@@ -97,10 +97,12 @@ namespace service
 
     public string GenerateJwtToken(User user)
     {
+      Console.WriteLine($"GenerateJwtToken::Generating JWT token {user.Username}");
       var claims = new[]
       {
           new Claim(JwtRegisteredClaimNames.Sub, user.Username),
           new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+          new Claim(ClaimTypes.Name, user.Username),
           new Claim(ClaimTypes.Role, user.Role)
       };
       string jwtKey = _configuration["Jwt:Key"] ?? throw new Exception("GenerateJwtToken::Jwt:Key is not set in the configuration");

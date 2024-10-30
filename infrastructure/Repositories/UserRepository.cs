@@ -4,6 +4,7 @@ using Npgsql;
 public interface IUserRepository
 {
   Task<User?> GetUserByUsernameAsync(string username);
+  Task<User?> GetUserByAccountIdAsync(Guid accountId);
   Task CreateAccountAsync(Account account);
 }
 namespace infrastructure.Repositories
@@ -38,6 +39,36 @@ namespace infrastructure.Repositories
         };
       }
       return null;
+    }
+
+    public async Task<User?> GetUserByAccountIdAsync(Guid accountId)
+    {
+      try
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var cmd = new NpgsqlCommand(@"
+                SELECT username, password, role
+                FROM NOIRTEST.ACCOUNTS
+                WHERE id = @AccountId;
+            ", conn);
+
+            cmd.Parameters.AddWithValue("AccountId", accountId);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new User
+                {
+                    Username = reader.GetString(0),
+                    PasswordHash = reader.GetString(1),
+                    Role = reader.GetString(2)
+                };
+            }
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("An error occurred while retrieving user by account ID: ", ex);
+        }
     }
 
     public async Task CreateAccountAsync(Account account)

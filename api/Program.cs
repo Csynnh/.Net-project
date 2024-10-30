@@ -87,7 +87,7 @@ builder.Services.AddSwaggerGen(c =>
 // Configure AWS S3 service
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
-
+builder.Services.AddHttpContextAccessor();
 // Configure JWT authentication
 var jwtSettings = configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
