@@ -6,36 +6,36 @@ using infrastructure.Repositories;
 
 namespace service;
 
-public class InvoiceService
+public class OderService
 {
-    private readonly InvoiceRepository _invoiceRepository;
+    private readonly OderRepository _oderRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository)
+    public OderService(OderRepository oderRepository)
     {
-        _invoiceRepository = invoiceRepository;
+        _oderRepository = oderRepository;
     }
 
-    public IEnumerable<Invoice> GetInvoiceForFeed()
+    public IEnumerable<OderResponseModel> ListOderByAccountId(Guid accountId)
     {
-        return _invoiceRepository.GetInvoiceForFeed();
+        return _oderRepository.ListOrderByAccountId(accountId);
     }
 
-    public Invoice CreateInvoice(Guid accountId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
-    {
-        return _invoiceRepository.CreateInvoice(accountId, total, status, checkoutMethod, shippingMethod);
-    }
+    // public Invoice CreateInvoice(Guid accountId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
+    // {
+    //     return _oderRepository.CreateInvoice(accountId, total, status, checkoutMethod, shippingMethod);
+    // }
 
-    public Invoice UpdateInvoice(Guid invoiceId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
-    {
-        return _invoiceRepository.UpdateInvoice(invoiceId, total, status, checkoutMethod, shippingMethod);
-    }
+    // public Invoice UpdateInvoice(Guid invoiceId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
+    // {
+    //     return _oderRepository.UpdateInvoice(invoiceId, total, status, checkoutMethod, shippingMethod);
+    // }
 
-    public void DeleteInvoice(Guid id )
-    {
-        var result = _invoiceRepository.DeleteInvoice(id );
-        if (!result)
-        {
-            throw new Exception("Could not delete invoice");
-        }
-    }
+    // public void DeleteInvoice(Guid id )
+    // {
+    //     var result = _oderRepository.DeleteInvoice(id );
+    //     if (!result)
+    //     {
+    //         throw new Exception("Could not delete invoice");
+    //     }
+    // }
 }

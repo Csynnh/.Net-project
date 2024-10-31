@@ -33,9 +33,13 @@ public class Collection
 }
 public class ProductDetails
 {
-    public string[] specification { get; set; } = Array.Empty<string>();
-    public string[] features { get; set; } = Array.Empty<string>();
-    public string[] additional { get; set; } = Array.Empty<string>();
+
+    public string ShortDesc { get; set; } = string.Empty;
+    public string Material { get; set; } = string.Empty;
+    public string Waterproof { get; set; } = string.Empty;
+    public string CareInstructions {get; set;} = string.Empty;
+    public string Dimensions { get; set; } = string.Empty;
+    public string Origin { get; set; } = string.Empty;
 }
 
 public class CreateProductRequestDto

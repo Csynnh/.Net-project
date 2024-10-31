@@ -1,27 +1,27 @@
 namespace infrastructure.DataModels;
 
-public class UserAddress
+public class UserStoredInformation
 {
     public Guid id { get; set; }  // Primary Key
     public Guid account_id { get; set; }  // Primary Key
-    public string address { get; set; } = string.Empty;  // Tên đăng nhập của người dùng
+    public string info { get; set; } = string.Empty;  // Tên đăng nhập của người dùng
 }
 
-public class UserAddressRequest
+public class UserInformationRequest
 {
     public string address { get; set; } = string.Empty;
     public string name { get; set; } = string.Empty;
     public string phone { get; set; } = string.Empty;
 }
 
-public class UserAddressModel : UserAddressRequest
+public class UserInformationModel : UserInformationRequest
 {
     public int id { get; set; }
     public Guid account_id { get; set; }
 }
 
-public class UserAddressResponse {
+public class UserInformationResponse {
     public Guid id { get; set; }
     public Guid account_id { get; set; }
-    public UserAddressModel address { get; set; }
+    public UserInformationModel info { get; set; }
 }

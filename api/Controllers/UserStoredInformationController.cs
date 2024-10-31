@@ -10,12 +10,12 @@ using service;
 
 namespace library.Controllers;
 
-public class UserAddressController : ControllerBase
+public class UserStoredInformationController : ControllerBase
 {
-    private readonly ILogger<UserAddressController> _logger;
-    private readonly UserAddressService _userAddressService;
+    private readonly ILogger<UserStoredInformationController> _logger;
+    private readonly UserStoredInformationService _userAddressService;
 
-    public UserAddressController(ILogger<UserAddressController> logger, UserAddressService userAddressService)
+    public UserStoredInformationController(ILogger<UserStoredInformationController> logger, UserStoredInformationService userAddressService)
     {
         _logger = logger;
         _userAddressService = userAddressService;
@@ -23,7 +23,7 @@ public class UserAddressController : ControllerBase
 
     [Authorize(Roles = "User,Admin")]
     [HttpGet]
-    [Route("/api/user-addresses/{account_id}")]
+    [Route("/api/user-stored-information/{account_id}")]
     public async Task<ResponseDto> Get([FromRoute] Guid account_id)
     {
         try
@@ -32,7 +32,7 @@ public class UserAddressController : ControllerBase
             return new ResponseDto()
             {
                 MessageToClient = "Successfully fetched",
-                ResponseData = await _userAddressService.ListUserAddress(account_id)
+                ResponseData = await _userAddressService.ListUserStoredInformation(account_id)
             };
         }
         catch (Exception ex)
@@ -50,7 +50,7 @@ public class UserAddressController : ControllerBase
     [Authorize(Roles = "User,Admin")]
     [HttpPost]
     [ValidateModel]
-    [Route("/api/user-addresses")]
+    [Route("/api/user-stored-information")]
     public async Task<ResponseDto> Post([FromBody] CreateUserAddressRequestDto dto)
     {
         try
@@ -59,7 +59,7 @@ public class UserAddressController : ControllerBase
             return new ResponseDto()
             {
                 MessageToClient = "Successfully created an user address",
-                ResponseData = await _userAddressService.CreateUserAddress(dto.account_id, dto.address)
+                ResponseData = await _userAddressService.CreateUserStoredInformation(dto.account_id, dto.address)
             };
         }
         catch (Exception ex)
@@ -76,8 +76,8 @@ public class UserAddressController : ControllerBase
     [Authorize(Roles = "User,Admin")]
     [HttpPut]
     [ValidateModel]
-    [Route("/api/user-addresses/{accountId}/{id}")]
-    public async Task<ResponseDto> Put([FromRoute] Guid id, [FromRoute] Guid accountId, [FromBody] UserAddressRequest address)
+    [Route("/api/user-stored-information/{accountId}/{id}")]
+    public async Task<ResponseDto> Put([FromRoute] Guid id, [FromRoute] Guid accountId, [FromBody] UserInformationRequest address)
     {
         try
         {
@@ -85,7 +85,7 @@ public class UserAddressController : ControllerBase
             return new ResponseDto()
             {
                 MessageToClient = "Successfully updated",
-                ResponseData = await _userAddressService.UpdateUserAddress(id, accountId, address)
+                ResponseData = await _userAddressService.UpdateUserStoredInformation(id, accountId, address)
             };
         }
         catch (Exception ex)
@@ -101,10 +101,10 @@ public class UserAddressController : ControllerBase
 
     [Authorize(Roles = "User,Admin")]
     [HttpDelete]
-    [Route("/api/user-addresses/{id}")]
+    [Route("/api/user-stored-information/{id}")]
     public async Task<ResponseDto> Delete([FromRoute] Guid id, [FromRoute] Guid account_id)
     {
-        await _userAddressService.DeleteUserAddress(id, account_id);
+        await _userAddressService.DeleteUserStoredInformation(id, account_id);
         return new ResponseDto()
         {
             MessageToClient = "Successfully deleted"
