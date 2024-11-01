@@ -23,28 +23,49 @@ public class OderController : ControllerBase
     [Authorize(Roles = "User,Admin")]
     [HttpGet]
     [Route("/api/oder/{account_id}")]
-    public ResponseDto Get([FromRoute] Guid account_id)
+    public async Task<ResponseDto> Get([FromRoute] Guid account_id)
     {
         HttpContext.Response.StatusCode = 200;
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _oderService.ListOderByAccountId(account_id)
+            ResponseData = await _oderService.ListOderByAccountId(account_id)
         };
     }
 
-    // [HttpPost]
-    // [ValidateModel]
-    // [Route("/api/oder")]
-    // public ResponseDto Post([FromBody] CreateInvoiceRequestDto dto)
-    // {
-    //     HttpContext.Response.StatusCode = StatusCodes.Status201Created;
-    //     return new ResponseDto()
-    //     {
-    //         MessageToClient = "Successfully created an invoice",
-    //         ResponseData = _oderService.CreateInvoice(dto.account_id, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
-    //     };
-    // }
+    [Authorize(Roles = "User,Admin")]
+    [HttpPost]
+    [ValidateModel]
+    [Route("/api/oder")]
+    public async Task<ResponseDto> Post([FromBody] CreateOderRequestDto dto)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully created an oder",
+                ResponseData = await _oderService.CreateNewOder(
+                    accountId: dto.account_id,
+                    total: dto.price,
+                    status: dto.status,
+                    paymentMethodId: dto.payment_method_id,
+                    shippingMethodId: dto.shipping_method_id,
+                    storedInformationId: dto.user_stored_info_id
+                    )
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating an oder");
+            HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return new ResponseDto()
+            {
+                MessageToClient = "An error occurred while creating the oder",
+                ResponseData = null
+            };
+        }
+    }
 
     // [HttpPut]
     // [ValidateModel]

@@ -27,27 +27,24 @@ if (builder.Environment.IsProduction())
 }
 
 // Register repositories and services
-builder.Services.AddSingleton<BookRepository>();
-builder.Services.AddSingleton<BookService>();
 builder.Services.AddSingleton<CustomerReviewRepository>();
 builder.Services.AddSingleton<CustomerReviewService>();
 builder.Services.AddSingleton<OderRepository>();
 builder.Services.AddSingleton<OderService>();
 builder.Services.AddSingleton<ProductRepository>();
 builder.Services.AddSingleton<ProductService>();
-builder.Services.AddSingleton<InvoiceDetailRepository>();
-builder.Services.AddSingleton<InvoiceDetailService>();
-builder.Services.AddSingleton<ProductColorRepository>();
-builder.Services.AddSingleton<ProductColorService>();
-builder.Services.AddSingleton<CartRepository>();
+builder.Services.AddSingleton<OderDetailRepository>();
+builder.Services.AddSingleton<OderDetailService>();
 builder.Services.AddSingleton<CartService>();
-builder.Services.AddSingleton<ContactHistoryRepository>();
-builder.Services.AddSingleton<ContactService>();
+builder.Services.AddSingleton<CartRepository>();
 builder.Services.AddSingleton<UserStoredInformationRepository>();
 builder.Services.AddSingleton<UserStoredInformationService>();
 builder.Services.AddSingleton<UserRepository>();
 builder.Services.AddSingleton<UserService>();
-
+builder.Services.AddSingleton<PaymentMethodRepository>();
+builder.Services.AddSingleton<PaymentMethodService>();
+builder.Services.AddSingleton<ShippingMethodRepository>();
+builder.Services.AddSingleton<ShippingMethodService>();
 builder.Services.AddSingleton<MigrationRunner>();
 builder.Services.AddControllers();
 

@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS NOIRTEST.PAYMENTMETHODS (
 -- Create the ShippingMethods table
 CREATE TABLE IF NOT EXISTS NOIRTEST.SHIPPINGMETHODS (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    account_id UUID REFERENCES NOIRTEST.ACCOUNTS(id),
-    shipping_method JSON
+    shipping_name VARCHAR(255) NOT NULL,
+    shipping_cost NUMERIC(10, 2) NOT NULL
 );
 
 -- Create the Orders table
