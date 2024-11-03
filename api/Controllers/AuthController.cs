@@ -21,21 +21,21 @@ namespace api.Controllers
     [HttpPost("login")]
     public async Task<ResponseDto> Login(LoginRequest loginRequest)
     {
-      string? token = await _userService.ValidateUserAsync(loginRequest.Username, loginRequest.Password);
-        HttpContext.Response.StatusCode = 200;
+      LoginResponse? token = await _userService.ValidateUserAsync(loginRequest.Username, loginRequest.Password);
+      HttpContext.Response.StatusCode = 200;
       if (token != null)
       {
         return new ResponseDto()
         {
-            MessageToClient = "Successfully logged in",
-            ResponseData = new { Token = token }
+          MessageToClient = "Successfully logged in",
+          ResponseData = new LoginResponse { Token = token.Token, AccountId = token.AccountId, ExpiredTime = token.ExpiredTime }
         };
       }
       HttpContext.Response.StatusCode = 401;
       return new ResponseDto()
       {
-          MessageToClient = "Invalid username or password",
-          ResponseData = null
+        MessageToClient = "Invalid username or password",
+        ResponseData = null
       };
     }
 
@@ -44,25 +44,25 @@ namespace api.Controllers
     [Route("accounts")]
     public async Task<ResponseDto> CreateAccount([FromBody] CreateAccountRequestDto dto)
     {
-        try
+      try
+      {
+        var responseData = await _userService.CreateAccount(dto.username, dto.password, dto.name, dto.email, dto.phone_number, dto.role);
+        HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+        return new ResponseDto()
         {
-          var responseData = await _userService.CreateAccount(dto.username, dto.password, dto.name, dto.email, dto.phone_number, dto.role);
-          HttpContext.Response.StatusCode = StatusCodes.Status201Created;
-          return new ResponseDto()
-          {
-            MessageToClient = "Successfully created new account",
-            ResponseData = responseData
-          };
-        }
-        catch (Exception ex)
+          MessageToClient = "Successfully created new account",
+          ResponseData = responseData
+        };
+      }
+      catch (Exception ex)
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return new ResponseDto()
         {
-          HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-          return new ResponseDto()
-          {
-            MessageToClient = $"CreateAccount::An error occurred while creating the account",
-            ResponseData = ex.Message
-          };
-        }
+          MessageToClient = $"CreateAccount::An error occurred while creating the account",
+          ResponseData = ex.Message
+        };
+      }
     }
   }
 }

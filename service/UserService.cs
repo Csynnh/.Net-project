@@ -35,7 +35,7 @@ namespace service
       return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 
-    public async Task<string?> ValidateUserAsync(string username, string password)
+    public async Task<LoginResponse?> ValidateUserAsync(string username, string password)
     {
       // Retrieve the user from the database
       var user = await GetUserByUsernameAsync(username);
@@ -47,7 +47,8 @@ namespace service
       bool IsCorrectPassword = VerifyPassword(password, user.PasswordHash);
       if (IsCorrectPassword)
       {
-        return GenerateJwtToken(user);
+        var token = GenerateJwtToken(user);
+        return new LoginResponse{ Token= token.Token, AccountId = user.Id, ExpiredTime = token.ExpiredTime };
       }
       return null;
     }
@@ -70,7 +71,7 @@ namespace service
       {
         // check current user role with token role
         var roleClaim = ClaimTypes.Role.ToString();
-        if(roleClaim != "Admin" && role != "User")
+        if (roleClaim != "Admin" && role != "User")
         {
           throw new SecurityException("CreateAccount::You do not have permission to create an account with this role");
         }
@@ -95,7 +96,7 @@ namespace service
       }
     }
 
-    public string GenerateJwtToken(User user)
+    public TokenModel GenerateJwtToken(User user)
     {
       Console.WriteLine($"GenerateJwtToken::Generating JWT token {user.Username}");
       var claims = new[]
@@ -116,7 +117,10 @@ namespace service
           expires: DateTime.Now.AddMinutes(30), // Token expiration time
           signingCredentials: creds);
 
-      return new JwtSecurityTokenHandler().WriteToken(token);
+      return new TokenModel {
+        Token = new JwtSecurityTokenHandler().WriteToken(token),
+        ExpiredTime = token.ValidTo
+      };
     }
   }
 }

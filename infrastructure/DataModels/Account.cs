@@ -13,6 +13,7 @@ public class Account
 
 public class User
 {
+    public Guid Id { get; set; } = Guid.Empty;
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "User";
@@ -22,4 +23,18 @@ public class LoginRequest
 {
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+}
+
+public class TokenModel
+{
+    public string Token { get; set; } = string.Empty;
+    public DateTime ExpiredTime { get; set; }
+}
+
+public class LoginResponse
+{
+    public string Token { get; set; } = string.Empty;
+    public Guid AccountId { get; set; } = Guid.Empty;
+    public DateTime ExpiredTime { get; set; }
+
 }
