@@ -11,7 +11,7 @@ public interface IProductService
 {
     Task<string> CreateProductAsync(CreateProductModel ProductRequest, IAmazonS3 _s3Client);
     Task<ProductModelResponse> GetProductByIdAsync(Guid id);
-    Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId);
+    Task<PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string orderStatus);
     Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
 }
@@ -32,11 +32,12 @@ public class ProductService : IProductService
         return response;
     }
 
-    public async Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId)
+    public async Task<PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
     {
-        var response = await _repository.ListProductByTypeIdAsync(typeId);
-        return response;
+        return await _repository.ListProductByTypeIdAsync(typeId, pageNumber, pageSize, size, minPrice, maxPrice);
     }
+
+
 
     public async Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync()
     {
@@ -67,10 +68,11 @@ public class ProductService : IProductService
             additionalImageUrls.Add(await uploader.UploadImageAsync(additionalImage));
         }
 
-        string images = JsonSerializer.Serialize(new ProductImagesModel() {
-                ImageThumbnail = image_url,
-                AdditionalImages = additionalImageUrls
-            }
+        string images = JsonSerializer.Serialize(new ProductImagesModel()
+        {
+            ImageThumbnail = image_url,
+            AdditionalImages = additionalImageUrls
+        }
         );
 
         ProductModel productModel = new ProductModel()

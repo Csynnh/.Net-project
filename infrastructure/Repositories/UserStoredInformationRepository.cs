@@ -19,7 +19,7 @@ namespace infrastructure.Repositories
                 SELECT id as {nameof(UserStoredInformation.id)},
                     account_id as {nameof(UserStoredInformation.account_id)},
                     info as {nameof(UserStoredInformation.info)}
-                FROM NOIRTEST.USERSTOREDINFOMATION
+                FROM DEV.USERSTOREDINFOMATION
                 WHERE account_id = @accountId
                 ;
             ";
@@ -32,7 +32,7 @@ namespace infrastructure.Repositories
         public UserStoredInformation CreateUserStoredInformation(Guid accountId, string info)
         {
             var sql = $@"
-                INSERT INTO NOIRTEST.USERSTOREDINFOMATION (account_id, info)
+                INSERT INTO DEV.USERSTOREDINFOMATION (account_id, info)
                 VALUES (@accountId, @info::json)
                 RETURNING id as {nameof(UserStoredInformation.id)},
                         account_id as {nameof(UserStoredInformation.account_id)},
@@ -47,7 +47,7 @@ namespace infrastructure.Repositories
         public UserStoredInformation UpdateUserStoredInformation(Guid userInformationId, string info)
         {
             var sql = $@"
-                UPDATE NOIRTEST.USERSTOREDINFOMATION
+                UPDATE DEV.USERSTOREDINFOMATION
                 SET info = @info::json
                 WHERE id = @userInformationId
                 RETURNING id as {nameof(UserStoredInformation.id)},
@@ -62,7 +62,7 @@ namespace infrastructure.Repositories
 
         public bool DeleteUserStoredInformation(Guid userStoredInformationId)
         {
-            var sql = @"DELETE FROM NOIRTEST.USERSTOREDINFOMATION WHERE id = @userStoredInformationId;";
+            var sql = @"DELETE FROM DEV.USERSTOREDINFOMATION WHERE id = @userStoredInformationId;";
             using (var conn = _dataSource.OpenConnection())
             {
                 return conn.Execute(sql, new { userStoredInformationId }) == 1;
@@ -71,7 +71,7 @@ namespace infrastructure.Repositories
 
         public int GetLastSequence()
         {
-            var sql = @"SELECT COUNT(*) FROM NOIRTEST.USERSTOREDINFOMATION;";
+            var sql = @"SELECT COUNT(*) FROM DEV.USERSTOREDINFOMATION;";
             using (var conn = _dataSource.OpenConnection())
             {
                 return conn.ExecuteScalar<int>(sql);
@@ -84,7 +84,7 @@ namespace infrastructure.Repositories
                 SELECT id as {nameof(UserStoredInformation.id)},
                     account_id as {nameof(UserStoredInformation.account_id)},
                     info as {nameof(UserStoredInformation.info)}
-                FROM NOIRTEST.USERSTOREDINFOMATION
+                FROM DEV.USERSTOREDINFOMATION
                 WHERE id = @userStoredInformationId
                 ;
             ";

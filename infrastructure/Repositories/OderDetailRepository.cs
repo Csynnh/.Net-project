@@ -24,7 +24,7 @@ public class OderDetailRepository: IOderDetailRepository
         using var conn = _dataSource.OpenConnection();
 
         var sql = @"
-            INSERT INTO NOIRTEST.ORDERDETAILS (order_id, product_variant_id, quantity, price)
+            INSERT INTO DEV.ORDERDETAILS (order_id, product_variant_id, quantity, price)
             VALUES (@OrderId, @ProductVariantId, @Quantity, @Price)
             RETURNING id, order_id, product_variant_id, quantity, price
         ";

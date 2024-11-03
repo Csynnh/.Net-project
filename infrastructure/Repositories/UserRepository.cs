@@ -23,7 +23,7 @@ namespace infrastructure.Repositories
       await using var conn = await _dataSource.OpenConnectionAsync();
       await using var cmd = new NpgsqlCommand("""
         SELECT username, password, role
-        FROM NOIRTEST.ACCOUNTS
+        FROM DEV.ACCOUNTS
         WHERE username = @Username;
       """, conn);
 
@@ -48,7 +48,7 @@ namespace infrastructure.Repositories
             await using var conn = await _dataSource.OpenConnectionAsync();
             var cmd = new NpgsqlCommand(@"
                 SELECT username, password, role
-                FROM NOIRTEST.ACCOUNTS
+                FROM DEV.ACCOUNTS
                 WHERE id = @AccountId;
             ", conn);
 
@@ -75,7 +75,7 @@ namespace infrastructure.Repositories
     {
       await using var conn = await _dataSource.OpenConnectionAsync();
       await using var cmd = new NpgsqlCommand("""
-              INSERT INTO NOIRTEST.ACCOUNTS (username, password, name, email, phone_number, role)
+              INSERT INTO DEV.ACCOUNTS (username, password, name, email, phone_number, role)
               VALUES (@Username, @Password, @Name, @Email, @PhoneNumber, @Role);
             """, conn);
       cmd.Parameters.AddWithValue("Name", account.name);

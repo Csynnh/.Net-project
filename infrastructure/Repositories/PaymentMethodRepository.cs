@@ -27,7 +27,7 @@ public class PaymentMethodRepository : IShippingMethodRepository
   {
     using var connection = _dataSource.CreateConnection();
     string sql = @"
-      INSERT INTO NOIRTEST.PAYMENTMETHODS (account_id, payment_method)
+      INSERT INTO DEV.PAYMENTMETHODS (account_id, payment_method)
       VALUES (@account_id, @payment_method::json)
       RETURNING id, account_id, payment_method;
     ";
@@ -39,7 +39,7 @@ public class PaymentMethodRepository : IShippingMethodRepository
     using var connection = _dataSource.CreateConnection();
     string sql = @"
       SELECT id, account_id, payment_method
-      FROM NOIRTEST.PAYMENTMETHODS
+      FROM DEV.PAYMENTMETHODS
       WHERE account_id = @accountId;
     ";
     var result = await connection.QueryAsync<PaymentMethod>(sql, new { accountId });
@@ -50,7 +50,7 @@ public class PaymentMethodRepository : IShippingMethodRepository
   {
     using var connection = _dataSource.CreateConnection();
     string sql = @"
-      DELETE FROM NOIRTEST.PAYMENTMETHODS
+      DELETE FROM DEV.PAYMENTMETHODS
       WHERE id = @paymentMethodId;
     ";
     await connection.ExecuteAsync(sql, new { paymentMethodId });
@@ -61,7 +61,7 @@ public class PaymentMethodRepository : IShippingMethodRepository
     using var connection = _dataSource.CreateConnection();
     string sql = @"
       SELECT account_id, payment_method
-      FROM NOIRTEST.PAYMENTMETHODS
+      FROM DEV.PAYMENTMETHODS
       WHERE id = @paymentMethodId;
     ";
     return await connection.QuerySingleAsync<PaymentMethod>(sql, new { paymentMethodId });

@@ -50,20 +50,20 @@ public class OderRepository : IOderRepository
                     'Color', c.Color
                 )) AS Variants,
                 t.Type
-                FROM NOIRTEST.Products p
-                JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
-                JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
-                JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
-                JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
-                JOIN NOIRTEST.ORDERDETAILS odt ON odt.product_variant_id = pv.id
+                FROM DEV.Products p
+                JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+                JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+                JOIN DEV.Colors c ON pv.Color_Id = c.Id
+                JOIN DEV.Types t ON p.Type_Id = t.Id
+                JOIN DEV.ORDERDETAILS odt ON odt.product_variant_id = pv.id
                 WHERE odt.order_id = od.id
                 GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
             ) lp
             ) AS list_products
-            FROM NOIRTEST.ORDERS od
-            LEFT JOIN NOIRTEST.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
-            LEFT JOIN NOIRTEST.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
-            LEFT JOIN NOIRTEST.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
+            FROM DEV.ORDERS od
+            LEFT JOIN DEV.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
+            LEFT JOIN DEV.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
+            LEFT JOIN DEV.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
             WHERE od.id = @id;
         ";
         using var conn = _dataSource.OpenConnection();
@@ -112,20 +112,20 @@ public class OderRepository : IOderRepository
                     'Color', c.Color
                 )) AS Variants,
                 t.Type
-                FROM NOIRTEST.Products p
-                JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
-                JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
-                JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
-                JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
-                JOIN NOIRTEST.ORDERDETAILS odt ON odt.product_variant_id = pv.id
+                FROM DEV.Products p
+                JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+                JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+                JOIN DEV.Colors c ON pv.Color_Id = c.Id
+                JOIN DEV.Types t ON p.Type_Id = t.Id
+                JOIN DEV.ORDERDETAILS odt ON odt.product_variant_id = pv.id
                 WHERE odt.order_id = od.id
                 GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
             ) lp
             ) AS list_products
-            FROM NOIRTEST.ORDERS od
-            LEFT JOIN NOIRTEST.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
-            LEFT JOIN NOIRTEST.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
-            LEFT JOIN NOIRTEST.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
+            FROM DEV.ORDERS od
+            LEFT JOIN DEV.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
+            LEFT JOIN DEV.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
+            LEFT JOIN DEV.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
             WHERE od.account_id = @accountId;
         ";
         using var conn = _dataSource.OpenConnection();
@@ -149,7 +149,7 @@ public class OderRepository : IOderRepository
     public async Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId, string status)
     {
         var sql = $@"
-            INSERT INTO NOIRTEST.ORDERS (account_id, total, payment_method_id, shipping_method_id, stored_information_id, status)
+            INSERT INTO DEV.ORDERS (account_id, total, payment_method_id, shipping_method_id, stored_information_id, status)
             VALUES (@accountId, @total, @paymentMethodId, @shippingMethodId, @storedInformationId, @status)
             RETURNING id, account_id, total, payment_method_id, shipping_method_id, stored_information_id, status;
         ";

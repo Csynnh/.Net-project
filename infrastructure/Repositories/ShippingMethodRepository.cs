@@ -23,7 +23,7 @@ public class ShippingMethodRepository : IShippingMethodRepository
   {
     using var connection = _dataSource.CreateConnection();
     string sql = @"
-      INSERT INTO NOIRTEST.SHIPPINGMETHODS (shipping_name, shipping_cost)
+      INSERT INTO DEV.SHIPPINGMETHODS (shipping_name, shipping_cost)
       VALUES (@shipping_name, @shipping_cost)
       RETURNING id, shipping_name, shipping_cost;
     ";
@@ -35,7 +35,7 @@ public class ShippingMethodRepository : IShippingMethodRepository
     using var connection = _dataSource.CreateConnection();
     string sql = @"
       SELECT id, shipping_name, shipping_cost
-      FROM NOIRTEST.SHIPPINGMETHODS;
+      FROM DEV.SHIPPINGMETHODS;
     ";
     var result = await connection.QueryAsync<ShippingMethod>(sql);
     return result.ToList();
@@ -45,7 +45,7 @@ public class ShippingMethodRepository : IShippingMethodRepository
   {
     using var connection = _dataSource.CreateConnection();
     string sql = @"
-      DELETE FROM NOIRTEST.SHIPPINGMETHODS
+      DELETE FROM DEV.SHIPPINGMETHODS
       WHERE id = @shippingMethodId;
     ";
     await connection.ExecuteAsync(sql, new { shippingMethodId });

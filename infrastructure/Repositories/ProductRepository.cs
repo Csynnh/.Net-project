@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using Dapper;
 using infrastructure.QueryModels;
@@ -7,7 +6,7 @@ public interface IProductRepository
 {
     Task AddProductAsync(ProductModel product);
     Task<ProductModelResponse> GetProductByIdAsync(Guid id);
-    Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId);
+    Task<infrastructure.DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
     Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status);
     Task<bool> IsProductExistAsync(string name, string color, string size);
@@ -37,11 +36,11 @@ namespace infrastructure.Repositories
                     'Color', c.Color
                 )) AS Variants,
                 t.Type
-            FROM NOIRTEST.Products p
-            JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
-            JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
-            JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
-            JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
+            FROM DEV.Products p
+            JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+            JOIN DEV.Colors c ON pv.Color_Id = c.Id
+            JOIN DEV.Types t ON p.Type_Id = t.Id
             WHERE p.Id = @Id
             GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { Id = id });
             var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
@@ -51,25 +50,106 @@ namespace infrastructure.Repositories
             return product;
         }
 
-        public async Task<IEnumerable<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId)
+        public async Task<DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
         {
             await using var conn = await _dataSource.OpenConnectionAsync();
-            var products = await conn.QueryAsync<ProductModelResponse>(@"
-            SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
-                jsonb_agg(jsonb_build_object(
-                    'Images', pv.Images::json,
-                    'Inventory', pv.Inventory,
-                    'Size', s.Size,
-                    'Color', c.Color
-                )) AS Variants,
-                t.Type
-            FROM NOIRTEST.Products p
-            JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
-            JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
-            JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
-            JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
-            WHERE t.Id = @TypeId
-            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { TypeId = typeId });
+
+            // Query for the total count of items
+            var countQuery = @"
+    SELECT COUNT(*)
+    FROM DEV.Products p
+    JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+    JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+    JOIN DEV.Colors c ON pv.Color_Id = c.Id
+    JOIN DEV.Types t ON p.Type_Id = t.Id
+    WHERE t.Id = @TypeId";
+
+            // Build the dynamic count query based on filters
+            if (!string.IsNullOrEmpty(size))
+            {
+                countQuery += " AND s.Size = @Size";
+            }
+
+            if (minPrice.HasValue)
+            {
+                countQuery += " AND p.Price >= @MinPrice";
+            }
+
+            if (maxPrice.HasValue)
+            {
+                countQuery += " AND p.Price <= @MaxPrice";
+            }
+
+            var totalItems = await conn.ExecuteScalarAsync<int>(countQuery, new
+            {
+                TypeId = typeId,
+                Size = size,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice
+            });
+
+            // Now query for the paginated items
+            var query = @"
+    SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+        jsonb_agg(jsonb_build_object(
+            'Images', pv.Images::json,
+            'Inventory', pv.Inventory,
+            'Size', s.Size,
+            'Color', c.Color
+        )) AS Variants,
+        t.Type
+    FROM DEV.Products p
+    JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+    JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+    JOIN DEV.Colors c ON pv.Color_Id = c.Id
+    JOIN DEV.Types t ON p.Type_Id = t.Id
+    WHERE t.Id = @TypeId";
+
+            // Build the dynamic query based on filters
+            if (!string.IsNullOrEmpty(size))
+            {
+                query += " AND s.Size = @Size";
+            }
+
+            if (minPrice.HasValue)
+            {
+                query += " AND p.Price >= @MinPrice";
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query += " AND p.Price <= @MaxPrice";
+            }
+
+            query += @"
+    GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
+    ORDER BY p.Name
+    OFFSET @Offset ROWS
+    FETCH NEXT @PageSize ROWS ONLY;";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("TypeId", typeId);
+            parameters.Add("Offset", (pageNumber - 1) * pageSize);
+            parameters.Add("PageSize", pageSize);
+
+            // Add filter parameters if they are provided
+            if (!string.IsNullOrEmpty(size))
+            {
+                parameters.Add("Size", size);
+            }
+
+            if (minPrice.HasValue)
+            {
+                parameters.Add("MinPrice", minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                parameters.Add("MaxPrice", maxPrice.Value);
+            }
+
+            var products = await conn.QueryAsync<ProductModelResponse>(query, parameters);
+
             foreach (var product in products)
             {
                 var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
@@ -77,8 +157,22 @@ namespace infrastructure.Repositories
                 product.Variants = productVariant;
                 product.Details = productDetails;
             }
-            return products;
+
+            // Calculate total pages
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            return new DataModels.PagedResponse<ProductModelResponse>
+            {
+                Items = products,
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
         }
+
+
+
 
         public async Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync()
         {
@@ -92,11 +186,11 @@ namespace infrastructure.Repositories
                     'Color', c.Color
                 )) AS Variants,
                 t.Type
-            FROM NOIRTEST.Products p
-            JOIN NOIRTEST.ProductVariants pv ON p.Id = pv.Product_Id
-            JOIN NOIRTEST.Sizes s ON pv.Size_Id = s.Id
-            JOIN NOIRTEST.Colors c ON pv.Color_Id = c.Id
-            JOIN NOIRTEST.Types t ON p.Type_Id = t.Id
+            FROM DEV.Products p
+            JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+            JOIN DEV.Colors c ON pv.Color_Id = c.Id
+            JOIN DEV.Types t ON p.Type_Id = t.Id
             GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type");
             foreach (var product in products)
             {
@@ -136,12 +230,12 @@ namespace infrastructure.Repositories
                         )
                     )
                 ) AS products
-            FROM NOIRTEST.ORDERS o
-            JOIN NOIRTEST.ORDERDETAILS od ON o.id = od.order_id
-            JOIN NOIRTEST.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
-            JOIN NOIRTEST.PRODUCTS p ON pv.product_id = p.id
-            JOIN NOIRTEST.SIZES s ON pv.size_id = s.id
-            JOIN NOIRTEST.COLORS c ON pv.color_id = c.id
+            FROM DEV.ORDERS o
+            JOIN DEV.ORDERDETAILS od ON o.id = od.order_id
+            JOIN DEV.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
+            JOIN DEV.PRODUCTS p ON pv.product_id = p.id
+            JOIN DEV.SIZES s ON pv.size_id = s.id
+            JOIN DEV.COLORS c ON pv.color_id = c.id
             WHERE o.account_id = @AccountId AND o.status = @Status
             GROUP BY o.id, o.status;", new { AccountId = accountId, Status = status });
             foreach (var product in products)
@@ -166,38 +260,38 @@ namespace infrastructure.Repositories
             await using var conn = await _dataSource.OpenConnectionAsync();
             await using var cmd = new NpgsqlCommand("""
             -- Insert the color if it does not exist
-            INSERT INTO NOIRTEST.Sizes (size)
+            INSERT INTO DEV.Sizes (size)
             VALUES (@Size)
             ON CONFLICT (size)
             WHERE ((size)::text = @Size::text) DO NOTHING;
 
             -- Insert the color if it does not exist
-            INSERT INTO NOIRTEST.Colors (color)
+            INSERT INTO DEV.Colors (color)
             VALUES (@Color)
             ON CONFLICT (color)
             WHERE ((color)::text = @Color::text) DO NOTHING;
 
             -- Insert the type if it does not exist
-            INSERT INTO NOIRTEST.Types (type)
+            INSERT INTO DEV.Types (type)
             VALUES (@Type)
             ON CONFLICT (type)
             WHERE ((type)::text = @Type::text) DO NOTHING;
 
             -- Insert the product and check if it already exists based on the name
-            INSERT INTO NOIRTEST.Products (name, description, price, type_id, inventory, details)
+            INSERT INTO DEV.Products (name, description, price, type_id, inventory, details)
             SELECT @Name, @Description, @Price, t.Id, @Inventory, @Details::json
-            FROM NOIRTEST.Types t
+            FROM DEV.Types t
             WHERE t.type = @Type
             ON CONFLICT (Name)
             WHERE ((Name)::text = @Name::text) DO NOTHING;
 
             -- Insert the product variant
-            INSERT INTO NOIRTEST.ProductVariants (product_id, size_id, color_id, images, inventory)
+            INSERT INTO DEV.ProductVariants (product_id, size_id, color_id, images, inventory)
             SELECT p.Id, s.Id, c.Id, @Images::json, @Inventory
-            FROM NOIRTEST.Products p
-            JOIN NOIRTEST.Types t ON p.type_id = t.Id
-            JOIN NOIRTEST.Sizes s ON s.size = @Size
-            JOIN NOIRTEST.Colors c ON c.color = @Color
+            FROM DEV.Products p
+            JOIN DEV.Types t ON p.type_id = t.Id
+            JOIN DEV.Sizes s ON s.size = @Size
+            JOIN DEV.Colors c ON c.color = @Color
             WHERE p.Name = @Name;
             """, conn);
 
@@ -233,17 +327,17 @@ namespace infrastructure.Repositories
             c.color AS color,
             pv.images AS images
         FROM
-            NOIRTEST.ORDERS o
+            DEV.ORDERS o
         JOIN
-            NOIRTEST.ORDERDETAILS od ON o.id = od.order_id
+            DEV.ORDERDETAILS od ON o.id = od.order_id
         JOIN
-            NOIRTEST.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
+            DEV.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
         JOIN
-            NOIRTEST.PRODUCTS p ON pv.product_id = p.id
+            DEV.PRODUCTS p ON pv.product_id = p.id
         LEFT JOIN
-            NOIRTEST.SIZES s ON pv.size_id = s.id
+            DEV.SIZES s ON pv.size_id = s.id
         LEFT JOIN
-            NOIRTEST.COLORS c ON pv.color_id = c.id
+            DEV.COLORS c ON pv.color_id = c.id
         WHERE
             o.account_id = :account_id
             AND o.status = :status
@@ -257,10 +351,10 @@ namespace infrastructure.Repositories
             // Define the SQL query to check for existing products with the specified criteria
             const string sql = @"
         SELECT COUNT(*)
-        FROM NOIRTEST.PRODUCTS p
-        JOIN NOIRTEST.PRODUCTVARIANTS pv ON p.id = pv.product_id
-        JOIN NOIRTEST.COLORS c ON pv.color_id = c.id
-        JOIN NOIRTEST.SIZES s ON pv.size_id = s.id
+        FROM DEV.PRODUCTS p
+        JOIN DEV.PRODUCTVARIANTS pv ON p.id = pv.product_id
+        JOIN DEV.COLORS c ON pv.color_id = c.id
+        JOIN DEV.SIZES s ON pv.size_id = s.id
         WHERE p.name = @Name AND c.color = @Color AND s.size = @Size";
 
             try
