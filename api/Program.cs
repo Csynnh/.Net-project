@@ -15,11 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 // Add services to the container.
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
-        dataSourceBuilder => dataSourceBuilder.EnableParameterLogging());
-}
+builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
+    dataSourceBuilder => dataSourceBuilder.EnableParameterLogging());
 
 if (builder.Environment.IsProduction())
 {
@@ -129,15 +126,12 @@ if (args.Contains("--migrate-db"))
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+});
 
 // Enable CORS
 app.UseCors(options =>
