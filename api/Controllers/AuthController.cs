@@ -27,8 +27,8 @@ namespace api.Controllers
       {
         return new ResponseDto()
         {
-          MessageToClient = "Successfully logged in",
-          ResponseData = new LoginResponse { Token = token.Token, AccountId = token.AccountId, ExpiredTime = token.ExpiredTime }
+          MessageToClient = "Successfully logged in!",
+          ResponseData = token
         };
       }
       HttpContext.Response.StatusCode = 401;

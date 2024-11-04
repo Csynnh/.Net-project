@@ -22,7 +22,7 @@ namespace infrastructure.Repositories
     {
       await using var conn = await _dataSource.OpenConnectionAsync();
       await using var cmd = new NpgsqlCommand("""
-        SELECT id, username, password, role
+        SELECT id, username, password, role, email, phone_number
         FROM DEV.ACCOUNTS
         WHERE username = @Username;
       """, conn);
@@ -36,7 +36,9 @@ namespace infrastructure.Repositories
           Id = reader.GetGuid(0),
           Username = reader.GetString(1),
           PasswordHash = reader.GetString(2),
-          Role = reader.GetString(3)
+          Role = reader.GetString(3),
+          Email = reader.GetString(4),
+          PhoneNumber = reader.GetString(5)
         };
       }
       return null;

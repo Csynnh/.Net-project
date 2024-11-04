@@ -48,7 +48,14 @@ namespace service
       if (IsCorrectPassword)
       {
         var token = GenerateJwtToken(user);
-        return new LoginResponse{ Token= token.Token, AccountId = user.Id, ExpiredTime = token.ExpiredTime };
+        return new LoginResponse
+        {
+          Token = token.Token,
+          AccountId = user.Id,
+          ExpiredTime = token.ExpiredTime,
+          Email = user.Email,
+          PhoneNumber = user.PhoneNumber
+        };
       }
       return null;
     }
@@ -117,7 +124,8 @@ namespace service
           expires: DateTime.Now.AddMinutes(30), // Token expiration time
           signingCredentials: creds);
 
-      return new TokenModel {
+      return new TokenModel
+      {
         Token = new JwtSecurityTokenHandler().WriteToken(token),
         ExpiredTime = token.ValidTo
       };
