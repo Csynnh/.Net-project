@@ -19,7 +19,7 @@ public class EmailService
     var emailContent = new EmailContent("OTP change password")
     {
       PlainText = $"Your OTP code is: {otpCode}",
-      Html = GetOtpTemplate(filePath: "templates/OtpTemplate.html", otpCode: otpCode)
+      Html = GetOtpTemplate(filePath: "~/templates/OtpTemplate.html", otpCode: otpCode)
     };
 
     var emailMessage = new EmailMessage(_senderEmail, recipientEmail, emailContent);
