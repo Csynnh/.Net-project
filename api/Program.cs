@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,9 @@ builder.Services.AddSingleton<PaymentMethodRepository>();
 builder.Services.AddSingleton<PaymentMethodService>();
 builder.Services.AddSingleton<ShippingMethodRepository>();
 builder.Services.AddSingleton<ShippingMethodService>();
+builder.Services.AddSingleton<EmailService>();
+builder.Services.AddSingleton<OtpService>();
+builder.Services.AddSingleton<OtpRepository>();
 builder.Services.AddSingleton<MigrationRunner>();
 builder.Services.AddControllers();
 
@@ -79,7 +84,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure AWS S3 service
-builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+var awsOptions = new AWSOptions
+{
+    Credentials = new Amazon.Runtime.BasicAWSCredentials(
+        Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID"),
+        Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY")
+    ),
+    Region = RegionEndpoint.GetBySystemName(Environment.GetEnvironmentVariable("AWS_DEFAULT_REGION") ?? "us-east-1")
+};
+builder.Services.AddDefaultAWSOptions(awsOptions);
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddHttpContextAccessor();
 // Configure JWT authentication

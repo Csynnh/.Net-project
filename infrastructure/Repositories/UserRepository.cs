@@ -6,7 +6,10 @@ public interface IUserRepository
   Task<User?> GetUserByUsernameAsync(string username);
   Task<User?> GetUserByAccountIdAsync(Guid accountId);
   Task CreateAccountAsync(Account account);
+  Task<User?> GetUserByEmailAsync(string email);
+  Task UpdatePasswordAsync(User account);
 }
+
 namespace infrastructure.Repositories
 {
   public class UserRepository : IUserRepository
@@ -47,31 +50,31 @@ namespace infrastructure.Repositories
     public async Task<User?> GetUserByAccountIdAsync(Guid accountId)
     {
       try
-        {
-            await using var conn = await _dataSource.OpenConnectionAsync();
-            var cmd = new NpgsqlCommand(@"
+      {
+        await using var conn = await _dataSource.OpenConnectionAsync();
+        var cmd = new NpgsqlCommand(@"
                 SELECT username, password, role
                 FROM DEV.ACCOUNTS
                 WHERE id = @AccountId;
             ", conn);
 
-            cmd.Parameters.AddWithValue("AccountId", accountId);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return new User
-                {
-                    Username = reader.GetString(0),
-                    PasswordHash = reader.GetString(1),
-                    Role = reader.GetString(2)
-                };
-            }
-            return null;
-        }
-        catch (Exception ex)
+        cmd.Parameters.AddWithValue("AccountId", accountId);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
         {
-            throw new Exception("An error occurred while retrieving user by account ID: ", ex);
+          return new User
+          {
+            Username = reader.GetString(0),
+            PasswordHash = reader.GetString(1),
+            Role = reader.GetString(2)
+          };
         }
+        return null;
+      }
+      catch (Exception ex)
+      {
+        throw new Exception("An error occurred while retrieving user by account ID: ", ex);
+      }
     }
 
     public async Task CreateAccountAsync(Account account)
@@ -87,6 +90,48 @@ namespace infrastructure.Repositories
       cmd.Parameters.AddWithValue("Email", account.email);
       cmd.Parameters.AddWithValue("PhoneNumber", account.phone_number);
       cmd.Parameters.AddWithValue("Role", account.role);
+
+      await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+      await using var conn = await _dataSource.OpenConnectionAsync();
+      await using var cmd = new NpgsqlCommand("""
+        SELECT id, username, password, role, email, phone_number
+        FROM DEV.ACCOUNTS
+        WHERE email = @Email;
+      """, conn);
+
+      cmd.Parameters.AddWithValue("Email", email);
+      await using var reader = await cmd.ExecuteReaderAsync();
+      if (await reader.ReadAsync())
+      {
+        return new User
+        {
+          Id = reader.GetGuid(0),
+          Username = reader.GetString(1),
+          PasswordHash = reader.GetString(2),
+          Role = reader.GetString(3),
+          Email = reader.GetString(4),
+          PhoneNumber = reader.GetString(5)
+        };
+      }
+      return null;
+    }
+
+    public async Task UpdatePasswordAsync(User account)
+    {
+      await using var conn = await _dataSource.OpenConnectionAsync();
+      await using var cmd = new NpgsqlCommand(@"
+        UPDATE DEV.ACCOUNTS
+        SET
+          password = @Password
+        WHERE id = @Id;
+      ", conn);
+
+      cmd.Parameters.AddWithValue("Id", account.Id);
+      cmd.Parameters.AddWithValue("Password", account.PasswordHash);
 
       await cmd.ExecuteNonQueryAsync();
     }

@@ -16,13 +16,15 @@ namespace service
     private readonly UserRepository _userRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<UserService> _logger;
+    private readonly OtpService _otpService;
 
 
-    public UserService(UserRepository userRepository, IConfiguration configuration, ILogger<UserService> logger)
+    public UserService(UserRepository userRepository, OtpService otpService, IConfiguration configuration, ILogger<UserService> logger)
     {
       _userRepository = userRepository;
       _configuration = configuration;
       _logger = logger;
+      _otpService = otpService;
     }
 
     public string HashPassword(string password)
@@ -101,6 +103,24 @@ namespace service
       {
         throw new Exception($"CreateAccount::Failed to create an account for {username}: {ex.Message}");
       }
+    }
+
+    public async Task<bool> ChangePassword(PasswordChangeRequest request)
+    {
+      if (await _otpService.ValidateOtp(request.Email, request.Otp))
+      {
+        var user = await _userRepository.GetUserByEmailAsync(request.Email);
+        if (user == null)
+        {
+          throw new Exception("ChangePassword::User not found");
+        }
+        var newPasswordHash = HashPassword(request.NewPassword);
+        user.PasswordHash = newPasswordHash;
+        await _userRepository.UpdatePasswordAsync(user);
+        return true;
+      }
+
+      throw new Exception("ChangePassword::OTP validation failed");
     }
 
     public TokenModel GenerateJwtToken(User user)

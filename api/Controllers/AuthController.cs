@@ -12,10 +12,12 @@ namespace api.Controllers
   public class AuthController : ControllerBase
   {
     private readonly UserService _userService;
+    private readonly OtpService _otpService;
 
-    public AuthController(UserService userService)
+    public AuthController(UserService userService, OtpService otpService)
     {
       _userService = userService;
+      _otpService = otpService;
     }
 
     [HttpPost("login")]
@@ -60,6 +62,62 @@ namespace api.Controllers
         return new ResponseDto()
         {
           MessageToClient = $"CreateAccount::An error occurred while creating the account",
+          ResponseData = ex.Message
+        };
+      }
+    }
+
+    [HttpPost("request-otp")]
+    public async Task<ResponseDto> RequestOtp([FromBody] OtpRequest request)
+    {
+      try
+      {
+        await _otpService.GenerateAndSendOtpAsync(request.Email);
+        HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+        return new ResponseDto()
+        {
+          MessageToClient = "OTP sent successfully",
+          ResponseData = true
+        };
+      }
+      catch (Exception ex)
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return new ResponseDto()
+        {
+          MessageToClient = "Failed to send OTP",
+          ResponseData = ex.Message
+        };
+      }
+    }
+
+    [HttpPost("change-password")]
+    public async Task<ResponseDto> ChangePassword([FromBody] PasswordChangeRequest request)
+    {
+      try
+      {
+        if (await _userService.ChangePassword(request))
+        {
+          HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+          return new ResponseDto()
+          {
+            MessageToClient = "Password changed successfully",
+            ResponseData = true
+          };
+        }
+        HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        return new ResponseDto()
+        {
+          MessageToClient = "Failed to change password",
+          ResponseData = false
+        };
+      }
+      catch (Exception ex)
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return new ResponseDto()
+        {
+          MessageToClient = "Failed to change password",
           ResponseData = ex.Message
         };
       }
