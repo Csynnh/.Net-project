@@ -15,11 +15,12 @@ public class EmailService
   public async Task<bool> SendOtpEmailAsync(string recipientEmail, string otpCode)
   {
     var client = new EmailClient(_connectionString);
+    string otpEmailTemplatePath = Environment.GetEnvironmentVariable("OTP_EMAIL_TEMPLATE_PATH") ?? "~/templates/OtpTemplate.html";
 
     var emailContent = new EmailContent("OTP change password")
     {
       PlainText = $"Your OTP code is: {otpCode}",
-      Html = GetOtpTemplate(filePath: "~/templates/OtpTemplate.html", otpCode: otpCode)
+      Html = GetOtpTemplate(filePath: otpEmailTemplatePath, otpCode: otpCode)
     };
 
     var emailMessage = new EmailMessage(_senderEmail, recipientEmail, emailContent);
