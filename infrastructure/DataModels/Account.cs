@@ -48,6 +48,11 @@ public class OtpRequest
 {
     public string Email { get; set; }
 }
+public class OtpConfirmRequest
+{
+    public string Email { get; set; }
+    public string Otp { get; set; }
+}
 
 public class PasswordChangeRequest
 {
@@ -59,5 +64,5 @@ public class PasswordChangeRequest
 public class OtpRessponse
 {
     public string Otp { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTime Created_At { get; set; } = DateTime.UtcNow;
 }

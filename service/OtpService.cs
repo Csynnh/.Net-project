@@ -40,8 +40,9 @@ public class OtpService
     try
     {
       OtpRessponse otpStorage = await _otpRepository.GetOtpByEmailAsync(email);
+      DateTime now = DateTime.UtcNow;
       bool isCorrectOtp = otpStorage.Otp == otp;
-      bool isOtpExpired = (DateTime.Now - otpStorage.CreatedAt).TotalMinutes > 5;
+      bool isOtpExpired = (now - otpStorage.Created_At).TotalMinutes > 5;
       if (!isCorrectOtp)
       {
         throw new Exception("OTP is incorrect");

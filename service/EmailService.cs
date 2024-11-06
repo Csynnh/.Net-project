@@ -15,7 +15,7 @@ public class EmailService
   public async Task<bool> SendOtpEmailAsync(string recipientEmail, string otpCode)
   {
     var client = new EmailClient(_connectionString);
-    string otpEmailTemplatePath = Environment.GetEnvironmentVariable("OTP_EMAIL_TEMPLATE_PATH") ?? "~/templates/OtpTemplate.html";
+    string otpEmailTemplatePath = Environment.GetEnvironmentVariable("OTP_EMAIL_TEMPLATE_PATH") ?? "templates/OtpTemplate.html";
 
     var emailContent = new EmailContent("OTP change password")
     {

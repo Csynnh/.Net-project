@@ -91,6 +91,31 @@ namespace api.Controllers
       }
     }
 
+
+    [HttpPost("confirm-otp")]
+    public async Task<ResponseDto> ConfirmOtp([FromBody] OtpConfirmRequest request)
+    {
+      try
+      {
+        bool isValidOtp = await _otpService.ValidateOtp(request.Email, request.Otp);
+        HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+        return new ResponseDto()
+        {
+          MessageToClient = "OTP confirmed successfully",
+          ResponseData = isValidOtp
+        };
+      }
+      catch (Exception ex)
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return new ResponseDto()
+        {
+          MessageToClient = "Failed to confim OTP",
+          ResponseData = ex.Message
+        };
+      }
+    }
+
     [HttpPost("change-password")]
     public async Task<ResponseDto> ChangePassword([FromBody] PasswordChangeRequest request)
     {

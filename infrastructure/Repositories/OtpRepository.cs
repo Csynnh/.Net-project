@@ -27,8 +27,11 @@ public class OtpRepository
   {
     using var connection = _dataSource.CreateConnection();
     string sql = @"
-      SELECT otp, created_at FROM DEV.OTP WHERE email = @email;
+      SELECT otp, created_at FROM DEV.OTP WHERE email = @email ORDER BY created_at DESC;
     ";
-    return await connection.QueryFirstOrDefaultAsync<OtpRessponse>(sql, new { email });
+    OtpRessponse res = await connection.QueryFirstOrDefaultAsync<OtpRessponse>(sql, new { email }) ?? new OtpRessponse();
+    res.Created_At = DateTime.SpecifyKind(res.Created_At, DateTimeKind.Utc);
+
+    return res;
   }
 }
