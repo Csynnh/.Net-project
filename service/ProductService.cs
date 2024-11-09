@@ -11,7 +11,7 @@ public interface IProductService
 {
     Task<string> CreateProductAsync(CreateProductModel ProductRequest, IAmazonS3 _s3Client);
     Task<ProductModelResponse> GetProductByIdAsync(Guid id);
-    Task<PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
+    Task<PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string orderStatus);
     Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
 }
@@ -32,9 +32,9 @@ public class ProductService : IProductService
         return response;
     }
 
-    public async Task<PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
+    public async Task<PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
     {
-        return await _repository.ListProductByTypeIdAsync(typeId, pageNumber, pageSize, size, minPrice, maxPrice);
+        return await _repository.ListProductByTypeNameAsync(name, pageNumber, pageSize, size, minPrice, maxPrice);
     }
 
 

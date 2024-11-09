@@ -6,7 +6,7 @@ public interface IProductRepository
 {
     Task AddProductAsync(ProductModel product);
     Task<ProductModelResponse> GetProductByIdAsync(Guid id);
-    Task<infrastructure.DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
+    Task<infrastructure.DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
     Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status);
     Task<bool> IsProductExistAsync(string name, string color, string size);
@@ -50,7 +50,7 @@ namespace infrastructure.Repositories
             return product;
         }
 
-        public async Task<DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeIdAsync(Guid typeId, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
+        public async Task<DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
         {
             await using var conn = await _dataSource.OpenConnectionAsync();
 
@@ -62,7 +62,7 @@ namespace infrastructure.Repositories
     JOIN DEV.Sizes s ON pv.Size_Id = s.Id
     JOIN DEV.Colors c ON pv.Color_Id = c.Id
     JOIN DEV.Types t ON p.Type_Id = t.Id
-    WHERE t.Id = @TypeId";
+    WHERE t.type = @Name";
 
             // Build the dynamic count query based on filters
             if (!string.IsNullOrEmpty(size))
@@ -82,7 +82,7 @@ namespace infrastructure.Repositories
 
             var totalItems = await conn.ExecuteScalarAsync<int>(countQuery, new
             {
-                TypeId = typeId,
+                Name = name.ToUpper(),
                 Size = size,
                 MinPrice = minPrice,
                 MaxPrice = maxPrice
@@ -103,7 +103,7 @@ namespace infrastructure.Repositories
     JOIN DEV.Sizes s ON pv.Size_Id = s.Id
     JOIN DEV.Colors c ON pv.Color_Id = c.Id
     JOIN DEV.Types t ON p.Type_Id = t.Id
-    WHERE t.Id = @TypeId";
+    WHERE t.type = @Name";
 
             // Build the dynamic query based on filters
             if (!string.IsNullOrEmpty(size))
@@ -128,7 +128,7 @@ namespace infrastructure.Repositories
     FETCH NEXT @PageSize ROWS ONLY;";
 
             var parameters = new DynamicParameters();
-            parameters.Add("TypeId", typeId);
+            parameters.Add("Name", name.ToUpper());
             parameters.Add("Offset", (pageNumber - 1) * pageSize);
             parameters.Add("PageSize", pageSize);
 

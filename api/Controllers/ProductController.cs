@@ -37,9 +37,9 @@ public class ProductController : ControllerBase
 
 
     [HttpGet]
-    [Route("/api/products/collections/{typeId}")]
-    public async Task<ResponseDto> ListProductByTypeId(
-    [FromRoute] Guid typeId,
+    [Route("/api/products/collections/{name}")]
+    public async Task<ResponseDto> ListProductByTypeName(
+    [FromRoute] string name,
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] string? size = null,
@@ -49,9 +49,9 @@ public class ProductController : ControllerBase
         try
         {
             HttpContext.Response.StatusCode = 200;
-            _logger.LogInformation($"Fetching products with type id: {typeId}, Page: {pageNumber}, Page Size: {pageSize}, Size: {size}, Min Price: {minPrice}, Max Price: {maxPrice}");
+            _logger.LogInformation($"Fetching products with type id: {name}, Page: {pageNumber}, Page Size: {pageSize}, Size: {size}, Min Price: {minPrice}, Max Price: {maxPrice}");
 
-            var products = await _productService.ListProductByTypeIdAsync(typeId, pageNumber, pageSize, size, minPrice, maxPrice);
+            var products = await _productService.ListProductByTypeNameAsync(name, pageNumber, pageSize, size, minPrice, maxPrice);
 
             return new ResponseDto()
             {
