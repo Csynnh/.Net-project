@@ -42,9 +42,12 @@ public class ProductVariant
 
 public class ProductDetails
 {
-    public List<string> Specification { get; set; }
-    public List<string> Features { get; set; }
-    public List<string> Additional { get; set; }
+    public string ShortDesc { get; set; } = string.Empty;
+    public string Material { get; set; } = string.Empty;
+    public string Waterproof { get; set; } = string.Empty;
+    public string CareInstructions {get; set;} = string.Empty;
+    public string Dimensions { get; set; } = string.Empty;
+    public string Origin { get; set; } = string.Empty;
 }
 
 public class Color

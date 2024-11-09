@@ -205,7 +205,6 @@ namespace infrastructure.Repositories
                                                 Type = g.Key.Type,
                                                 Products = g.ToList()
                                             });
-            Console.WriteLine(groupedProducts);
             return groupedProducts;
         }
 
