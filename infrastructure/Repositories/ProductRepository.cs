@@ -90,7 +90,7 @@ namespace infrastructure.Repositories
 
             // Now query for the paginated items
             var query = @"
-    SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+    SELECT p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
         jsonb_agg(jsonb_build_object(
             'Images', pv.Images::json,
             'Inventory', pv.Inventory,
@@ -122,7 +122,7 @@ namespace infrastructure.Repositories
             }
 
             query += @"
-    GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
+    GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
     ORDER BY p.Name
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;";
@@ -178,7 +178,7 @@ namespace infrastructure.Repositories
         {
             await using var conn = await _dataSource.OpenConnectionAsync();
             var products = await conn.QueryAsync<ProductModelResponse>(@"
-            SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+            SELECT p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
                 jsonb_agg(jsonb_build_object(
                     'Images', pv.Images::json,
                     'Inventory', pv.Inventory,
@@ -191,7 +191,7 @@ namespace infrastructure.Repositories
             JOIN DEV.Sizes s ON pv.Size_Id = s.Id
             JOIN DEV.Colors c ON pv.Color_Id = c.Id
             JOIN DEV.Types t ON p.Type_Id = t.Id
-            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type");
+            GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type");
             foreach (var product in products)
             {
                 var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
