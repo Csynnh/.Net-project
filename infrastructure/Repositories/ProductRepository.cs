@@ -366,8 +366,8 @@ namespace infrastructure.Repositories
                     {
                         // Add parameters to prevent SQL injection
                         command.Parameters.AddWithValue("@Name", name);
-                        command.Parameters.AddWithValue("@Color", color);
-                        command.Parameters.AddWithValue("@Size", size);
+                        command.Parameters.AddWithValue("@Color", color.ToUpper());
+                        command.Parameters.AddWithValue("@Size", size.ToUpper());
 
                         // Execute the query and retrieve the count
                         var count = await command.ExecuteScalarAsync();
