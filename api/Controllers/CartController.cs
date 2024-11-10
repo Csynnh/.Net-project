@@ -4,6 +4,7 @@ using api.Filters;
 using api.TransferModels;
 using infrastructure.DataModels;
 using infrastructure.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using service;
 
@@ -20,52 +21,110 @@ public class CartController : ControllerBase
         _cartService = cartService;
     }
 
-    [HttpGet]
-    [Route("/api/carts")]
-    public ResponseDto Get()
-    {
-        HttpContext.Response.StatusCode = 200;
-        return new ResponseDto()
-        {
-            MessageToClient = "Successfully fetched",
-            ResponseData = _cartService.GetCartForFeed()
-        };
-    }
-
+    // Create Cart
     [HttpPost]
     [ValidateModel]
-    [Route("/api/carts")]
-    public ResponseDto Post([FromBody] CreateCartsRequestDto dto)
+    [Route("/api/carts")] // phần đuôi của API trên swagger
+    public ResponseDto Post([FromBody] Cart dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
-        return new ResponseDto()
+
+
+        try
         {
-            MessageToClient = "Successfully created an invoice",
-            ResponseData = _cartService.CreateCart(dto.account_id, dto.product_id, dto.quantity)
-        };
+            _cartService.CreateCart(dto.account_id, dto.variant_product_id, dto.quantity);
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully created an invoice",
+                ResponseData = "Created cart successfully!"
+            };
+        }
+        catch (Exception ex) // Catch other general exceptions
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Error",
+                ResponseData = ex.Message
+            };
+        }
     }
 
+    //Get List Cart
+    [HttpGet]
+    [Route("/api/carts/{account_id}")]
+    // [Authorize(Roles = "User")]
+    public ResponseDto Get([FromRoute] Guid account_id)
+    {
+        HttpContext.Response.StatusCode = 200;
+
+        try
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully fetched",
+                ResponseData = _cartService.GetCartForFeed(account_id)
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Error",
+                ResponseData = ex.Message
+            };
+        }
+    }
+
+
+    //Update Cart
     [HttpPut]
     [ValidateModel]
-    [Route("/api/carts/{id}")]
-    public ResponseDto Put([FromRoute] Guid id, [FromBody] CreateCartsRequestDto dto)
+    [Route("/api/carts/{id}/{quantity}")]
+    public ResponseDto Put([FromRoute] Guid id, [FromRoute] int quantity)
     {
         HttpContext.Response.StatusCode = 201;
-        return new ResponseDto()
+
+        try
         {
-            MessageToClient = "Successfully updated",
-            ResponseData = _cartService.UpdateCart(id, dto.quantity)
-        };
+            _cartService.UpdateCart(id, quantity);
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully updated",
+                ResponseData = "Successfully updated"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Error",
+                ResponseData = ex.Message
+            };
+        }
     }
 
     [HttpDelete]
     [Route("/api/carts/{id}")]
     public ResponseDto Delete([FromRoute] Guid id)
     {
-        _cartService.DeleteCart(id);
-        return new ResponseDto()
+        HttpContext.Response.StatusCode = 200;
+        try
         {
-            MessageToClient = "Successfully deleted"
-        };
+            _cartService.DeleteCart(id);
+
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully deleted",
+                ResponseData = "Successfully deleted"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Error",
+                ResponseData = ex.Message
+            };
+        }
     }
 }

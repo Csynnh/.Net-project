@@ -14,27 +14,54 @@ public class CartService
         _cartRepository = cartRepository;
     }
 
-    public IEnumerable<Cart> GetCartForFeed()
+    public void CreateCart(Guid account_id, Guid product_id, int quantity)
     {
-        return _cartRepository.GetCartForFeed();
+        try
+        {
+            _cartRepository.CreateCart(account_id, product_id, quantity);
+        }
+        catch (Exception ex) // Catch other general exceptions
+        {
+            // Handle other errors such as general exceptions or unexpected errors
+            throw new Exception(ex.Message);
+        }
     }
 
-    public Cart CreateCart(Guid account_id, Guid product_id, int quantity)
+
+    public IEnumerable<CartInQueryResult> GetCartForFeed(Guid account_id)
     {
-        return _cartRepository.CreateCart( account_id, product_id, quantity);
+        try
+        {
+            return _cartRepository.GetListCart(account_id);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
     }
 
-    public Cart UpdateCart(Guid cart_id, int quantity)
+    public void UpdateCart(Guid cart_id, int quantity)
     {
-        return _cartRepository.UpdateCart(cart_id, quantity);
+        try
+        {
+            _cartRepository.UpdateCart(cart_id, quantity);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+
     }
 
     public void DeleteCart(Guid cart_id)
     {
-        var result = _cartRepository.DeleteCart(cart_id);
-        if (!result)
+        try
         {
-            throw new Exception("Could not delete cart");
+            _cartRepository.DeleteCart(cart_id);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
         }
     }
 }

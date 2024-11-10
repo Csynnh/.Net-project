@@ -12,50 +12,95 @@ public class CartRepository
         _dataSource = dataSource;
     }
 
-    public IEnumerable<Cart> GetCartForFeed()
+    //Create Cart
+    public void CreateCart(Guid accountId, Guid variant_productId, int quantity)
     {
         var sql = $@"
-SELECT id as {nameof(CartFeedQuery.cart_id)}, account_id as {nameof(CartFeedQuery.account_id)}, product_id as {nameof(CartFeedQuery.product_id)}, quantity as {nameof(CartFeedQuery.quantity)}, added_at as {nameof(CartFeedQuery.added_at)}
-FROM carts;
-";
-        using (var conn = _dataSource.OpenConnection())
+        INSERT INTO dev.carts (account_id, product_variant_id, quantity)
+        VALUES (@accountId, @variant_productId, @quantity)
+        ";
+
+        try
         {
-            return conn.Query<Cart>(sql);
+            using (var conn = _dataSource.OpenConnection()) // Open connection to the database
+            {
+                conn.Execute(sql, new { accountId, variant_productId, quantity });
+            }
+        }
+        catch (Exception ex) // Catch other general exceptions
+        {
+            // Handle other errors such as general exceptions or unexpected errors
+            throw new Exception(ex.Message);
         }
     }
 
-    public Cart CreateCart(Guid accountId, Guid productId, int quantity)
+    // Get List Cart
+    public IEnumerable<CartInQueryResult> GetListCart(Guid accountId)
     {
         var sql = $@"
-INSERT INTO carts (account_id, product_id, quantity)
-VALUES (@accountId, @productId, @quantity)
-RETURNING id as {nameof(Cart.cart_id)}, account_id as {nameof(Cart.account_id)}, product_id as {nameof(Cart.product_id)}, quantity as {nameof(Cart.quantity)}, added_at as {nameof(Cart.added_at)};
-";
-        using (var conn = _dataSource.OpenConnection())
+        select 
+                c.id ,
+                p.name as product_name,
+                p.price as product_price,
+                c.quantity as product_quantity,
+                json_extract_path_text(pv.images, 'ImageThumbnail') AS product_image,
+                c2.color as product_color
+            from DEV.carts c
+            left join DEV.accounts a  on a.id = c.account_id
+            left join dev.productvariants pv on pv.id = c.product_variant_id
+            left join dev.products p on p.id = pv.product_id
+            left join dev.colors c2 on pv.color_id = c2.id
+            where c.account_id = @accountId;
+        ";
+
+        try
         {
-            return conn.QueryFirst<Cart>(sql, new { accountId, productId, quantity });
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.Query<CartInQueryResult>(sql, new { accountId });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
         }
     }
 
-    public Cart UpdateCart(Guid cartId, int quantity)
+    // Update Cart
+    public void UpdateCart(Guid cartId, int quantity)
     {
         var sql = $@"
-UPDATE carts
-SET quantity = @quantity
-RETURNING id as {nameof(Cart.cart_id)}, account_id as {nameof(Cart.account_id)}, product_id as {nameof(Cart.product_id)}, quantity as {nameof(Cart.quantity)}, added_at as {nameof(Cart.added_at)};
-";
-        using (var conn = _dataSource.OpenConnection())
+        UPDATE DEV.carts 
+        SET quantity = @quantity
+        WHERE id = @cartId
+        ";
+        try
         {
-            return conn.QueryFirst<Cart>(sql, new { cartId, quantity });
+            using (var conn = _dataSource.OpenConnection())
+            {
+                conn.Execute(sql, new { cartId, quantity });
+            }
         }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+
     }
 
-    public bool DeleteCart(Guid cartId)
+    public void DeleteCart(Guid cartId)
     {
-        var sql = @"DELETE FROM carts WHERE id = @cartId;";
-        using (var conn = _dataSource.OpenConnection())
+        var sql = @"DELETE FROM DEV.carts WHERE id = @cartId;";
+        try
         {
-            return conn.Execute(sql, new { cartId }) == 1;
+            using (var conn = _dataSource.OpenConnection())
+            {
+                conn.Execute(sql, new { cartId });
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
         }
     }
 }
