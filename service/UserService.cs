@@ -49,7 +49,7 @@ namespace service
       bool IsCorrectPassword = VerifyPassword(password, user.PasswordHash);
       if (IsCorrectPassword)
       {
-        var token = GenerateJwtToken(user);
+        var token = GenerateJwtToken(user, password);
         return new LoginResponse
         {
           Name = user.Name,
@@ -146,7 +146,7 @@ namespace service
       throw new Exception("ChangePassword::OTP validation failed");
     }
 
-    public TokenModel GenerateJwtToken(User user)
+    public TokenModel GenerateJwtToken(User user, string password)
     {
       Console.WriteLine($"GenerateJwtToken::Generating JWT token {user.Username}");
       var claims = new[]
@@ -154,7 +154,8 @@ namespace service
           new Claim(JwtRegisteredClaimNames.Sub, user.Username),
           new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
           new Claim(ClaimTypes.Name, user.Username),
-          new Claim(ClaimTypes.Role, user.Role)
+          new Claim(ClaimTypes.Role, user.Role),
+          new Claim(ClaimTypes.Hash, password),
       };
       string jwtKey = _configuration["Jwt:Key"] ?? throw new Exception("GenerateJwtToken::Jwt:Key is not set in the configuration");
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
