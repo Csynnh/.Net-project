@@ -52,6 +52,7 @@ namespace service
         var token = GenerateJwtToken(user);
         return new LoginResponse
         {
+          Name = user.Name,
           Token = token.Token,
           AccountId = user.Id,
           ExpiredTime = token.ExpiredTime,
@@ -102,6 +103,28 @@ namespace service
       catch (Exception ex)
       {
         throw new Exception($"CreateAccount::Failed to create an account for {username}: {ex.Message}");
+      }
+    }
+
+    public async Task<string> UpdateAccount(Guid id, string name, string email, string phone_number)
+    {
+      try
+      {
+        var account = new Account
+        {
+          id = id,
+          name = name,
+          email = email,
+          phone_number = phone_number
+        };
+
+        await _userRepository.UpdateAccountAsync(account: account);
+        _logger.LogInformation($"Successfully updated account for {name}");
+        return $"Successfully updated account for {name}";
+      }
+      catch (Exception ex)
+      {
+        throw new Exception($"UpdateAccount::Failed to update account for {name}: {ex.Message}");
       }
     }
 

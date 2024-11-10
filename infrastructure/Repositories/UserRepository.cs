@@ -25,7 +25,7 @@ namespace infrastructure.Repositories
     {
       await using var conn = await _dataSource.OpenConnectionAsync();
       await using var cmd = new NpgsqlCommand("""
-        SELECT id, username, password, role, email, phone_number
+        SELECT id, username, password, role, email, phone_number, name
         FROM DEV.ACCOUNTS
         WHERE username = @Username;
       """, conn);
@@ -41,7 +41,8 @@ namespace infrastructure.Repositories
           PasswordHash = reader.GetString(2),
           Role = reader.GetString(3),
           Email = reader.GetString(4),
-          PhoneNumber = reader.GetString(5)
+          PhoneNumber = reader.GetString(5),
+          Name = reader.GetString(6)
         };
       }
       return null;
@@ -90,6 +91,26 @@ namespace infrastructure.Repositories
       cmd.Parameters.AddWithValue("Email", account.email);
       cmd.Parameters.AddWithValue("PhoneNumber", account.phone_number);
       cmd.Parameters.AddWithValue("Role", account.role);
+
+      await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task UpdateAccountAsync(Account account)
+    {
+      await using var conn = await _dataSource.OpenConnectionAsync();
+      await using var cmd = new NpgsqlCommand(@"
+        UPDATE DEV.ACCOUNTS
+        SET
+          name = @Name,
+          email = @Email,
+          phone_number = @PhoneNumber
+        WHERE id = @Id;
+      ", conn);
+
+      cmd.Parameters.AddWithValue("Id", account.id);
+      cmd.Parameters.AddWithValue("Name", account.name);
+      cmd.Parameters.AddWithValue("Email", account.email);
+      cmd.Parameters.AddWithValue("PhoneNumber", account.phone_number);
 
       await cmd.ExecuteNonQueryAsync();
     }

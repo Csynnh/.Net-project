@@ -67,6 +67,32 @@ namespace api.Controllers
       }
     }
 
+    [HttpPut]
+    [ValidateModel]
+    [Route("accounts/{id}")]
+    public async Task<ResponseDto> UpdateAccount([FromBody] UpdateAccountRequestDto dto, [FromRoute] Guid id)
+    {
+      try
+      {
+        var responseData = await _userService.UpdateAccount(id, dto.name, dto.email, dto.phone_number);
+        HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+        return new ResponseDto()
+        {
+          MessageToClient = "Successfully updated account",
+          ResponseData = responseData
+        };
+      }
+      catch (Exception ex)
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return new ResponseDto()
+        {
+          MessageToClient = $"UpdateAccount::An error occurred while updating the account",
+          ResponseData = ex.Message
+        };
+      }
+    }
+
     [HttpPost("request-otp")]
     public async Task<ResponseDto> RequestOtp([FromBody] OtpRequest request)
     {

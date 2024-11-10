@@ -2,7 +2,7 @@ namespace infrastructure.DataModels;
 
 public class Account
 {
-    public int id { get; set; }  // Primary Key
+    public Guid id { get; set; }  // Primary Key
     public string username { get; set; } = string.Empty;  // Tên đăng nhập của người dùng
     public string password { get; set; } = string.Empty;  // Mật khẩu
     public string name { get; set; } = string.Empty;  // Họ và tên người dùng
@@ -14,6 +14,7 @@ public class Account
 public class User
 {
     public Guid Id { get; set; } = Guid.Empty;
+    public string Name { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "User";
@@ -35,6 +36,7 @@ public class TokenModel
 
 public class LoginResponse
 {
+    public string Name { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
     public Guid AccountId { get; set; } = Guid.Empty;
     public DateTime ExpiredTime { get; set; }
