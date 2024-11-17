@@ -35,6 +35,7 @@ public class ProductImagesModel
 
 public class ProductVariant
 {
+    public Guid Id { get; set; }
     public int Inventory { get; set; }
     public ProductImagesModel Images { get; set; }
     public string Size { get; set; }

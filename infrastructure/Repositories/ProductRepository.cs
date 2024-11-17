@@ -30,6 +30,7 @@ namespace infrastructure.Repositories
             var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse>(@"
             SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
                 jsonb_agg(jsonb_build_object(
+                    'Id', pv.Id,
                     'Images', pv.Images::json,
                     'Inventory', pv.Inventory,
                     'Size', s.Size,
