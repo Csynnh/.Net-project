@@ -1,5 +1,5 @@
 using System.Text.Json;
-using infrastructure.EnumVariables;
+using infrastructure.Contansts;
 
 namespace infrastructure.DataModels;
 
@@ -10,8 +10,8 @@ public class Invoice
     public DateTime created_at { get; set; }
     public decimal total { get; set; }
     public string status { get; set; } = Status.PROCESSING;
-    public string paymend_method { get; set; } = EnumVariables.PaymentMethod.GO_TO_STORE;
-    public string shipping_method { get; set; } = EnumVariables.ShippingMethod.GO_TO_STORE;
+    public string paymend_method { get; set; } = PAYMENTMETHOD.GO_TO_STORE;
+    public string shipping_method { get; set; } = SHIPPINGMETHOD.GO_TO_STORE;
 
 }
 
@@ -38,4 +38,20 @@ public class ListOderResponseModel
     public UserInformationRequest user_info { get; set; }
     public ShippingMethod shipping_method { get; set; }
     public object list_products { get; set; }
+}
+
+public class ProductCheckout
+{
+    public string id { get; set; }
+    public string name { get; set; }
+    public decimal price { get; set; }
+    public List<Variant> variants { get; set; }
+}
+
+public class Variant
+{
+    public Guid id { get; set; }
+    public string color { get; set; }
+    public string image { get; set; }
+    public int count { get; set; }
 }

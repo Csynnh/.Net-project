@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using infrastructure.Contansts;
 using infrastructure.EnumVariables;
 
 namespace api.TransferModels;

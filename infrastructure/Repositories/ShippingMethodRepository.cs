@@ -41,6 +41,17 @@ public class ShippingMethodRepository : IShippingMethodRepository
     return result.ToList();
   }
 
+  public async Task<ShippingMethod> GetShippingMethodByName(string shippingName)
+  {
+    using var connection = _dataSource.CreateConnection();
+    string sql = @"
+      SELECT id, shipping_name, shipping_cost
+      FROM DEV.SHIPPINGMETHODS
+      WHERE shipping_name = @shippingName;
+    ";
+    return await connection.QuerySingleOrDefaultAsync<ShippingMethod>(sql, new { shippingName });
+  }
+
   public async Task DeleteShippingMethod(Guid shippingMethodId)
   {
     using var connection = _dataSource.CreateConnection();

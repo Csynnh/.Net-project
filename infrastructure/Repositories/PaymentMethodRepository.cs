@@ -11,6 +11,7 @@ public interface IShippingMethodRepository
   Task<List<PaymentMethod>> GetPaymentMethodByAccountId(Guid accountId);
   Task DeletePaymentMethod(Guid paymentMethodId);
   Task<PaymentMethod> GetPaymentMethodById(Guid paymentMethodId);
+  Task<PaymentMethod> GetPaymentMethodByName(string paymentMethodName);
 }
 
 public class PaymentMethodRepository : IShippingMethodRepository
@@ -65,5 +66,17 @@ public class PaymentMethodRepository : IShippingMethodRepository
       WHERE id = @paymentMethodId;
     ";
     return await connection.QuerySingleAsync<PaymentMethod>(sql, new { paymentMethodId });
+  }
+
+  public async Task<PaymentMethod> GetPaymentMethodByName(string paymentMethodName)
+  {
+    using var connection = _dataSource.CreateConnection();
+    string sql = @"
+      SELECT id, account_id, payment_method
+      FROM DEV.PAYMENTMETHODS
+      WHERE payment_method->>'payment_name' = @paymentMethodName
+      LIMIT 1;
+    ";
+    return await connection.QuerySingleOrDefaultAsync<PaymentMethod>(sql, new { paymentMethodName });
   }
 }

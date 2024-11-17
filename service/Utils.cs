@@ -1,5 +1,8 @@
 
+using System.Security.Claims;
 using Azure.Storage.Blobs;
+using infrastructure.DataModels;
+using infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 
 public class BlodUploader
@@ -34,5 +37,29 @@ public class BlodUploader
     // Generate the public URL for the uploaded image
     Uri blobUrl = blobClient.Uri;
     return blobUrl.ToString();
+  }
+}
+
+public class Authorization
+{
+  private readonly IHttpContextAccessor _httpContextAccessor;
+  private readonly UserRepository _userRepository;
+  public Authorization(IHttpContextAccessor httpContextAccessor, UserRepository userRepository)
+  {
+    _httpContextAccessor = httpContextAccessor;
+    _userRepository = userRepository;
+  }
+  public async Task<bool> IsValidUser(Guid accountId)
+  {
+    var user = _httpContextAccessor.HttpContext?.User;
+    string UsernameClaim = user?.FindFirst(ClaimTypes.Name)?.Value!;
+    string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
+    User? AccountRequest = await _userRepository.GetUserByAccountIdAsync(accountId);
+    if (AccountRequest != null && AccountRequest.Username != UsernameClaim && RoleClaim != "Admin")
+    {
+      throw new UnauthorizedAccessException("You do not have permission to list this user info");
+    }
+
+    return true;
   }
 }

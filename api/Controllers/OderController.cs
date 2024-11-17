@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using api.CustomDataAnnotations;
 using api.Filters;
+using api.Request;
 using api.TransferModels;
 using infrastructure.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using service;
+using ShopAPI.Filters;
 
 namespace library.Controllers;
 
@@ -37,7 +39,8 @@ public class OderController : ControllerBase
     [HttpPost]
     [ValidateModel]
     [Route("/api/oder")]
-    public async Task<ResponseDto> Post([FromBody] CreateOderRequestDto dto)
+    // [TypeFilter(typeof(OderFilter))]
+    public async Task<ResponseDto> Post([FromBody] CreateOderRequest dto)
     {
         try
         {
@@ -48,11 +51,11 @@ public class OderController : ControllerBase
                 ResponseData = await _oderService.CreateNewOder(
                     accountId: dto.account_id,
                     total: dto.price,
-                    status: dto.status,
-                    paymentMethodId: dto.payment_method_id,
-                    shippingMethodId: dto.shipping_method_id,
-                    storedInformationId: dto.user_stored_info_id
-                    )
+                    paymentMethod: dto.paymentMethod,
+                    shippingMethod: dto.shippingMethod,
+                    userInfo: dto.userInfo,
+                    products: dto.products
+                )
             };
         }
         catch (Exception ex)

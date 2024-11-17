@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
 using infrastructure.DataModels;
-using infrastructure.EnumVariables;
-using infrastructure.QueryModels;
 using infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -11,7 +8,14 @@ namespace service;
 public interface IOderService
 {
     Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId);
-    Task<OderResponseModel> CreateNewOder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId, string status);
+    Task<string> CreateNewOder(
+        Guid accountId,
+        decimal total,
+        string paymentMethod,
+        string shippingMethod,
+        UserInformationRequest userInfo,
+        List<ProductCheckout> products
+    );
 
 }
 
@@ -20,25 +24,41 @@ public class OderService : IOderService
     private readonly OderRepository _oderRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly UserRepository _userRepository;
+    private readonly PaymentMethodRepository _paymentMethodRepository;
+    private readonly ShippingMethodRepository _shippingMethodRepository;
+    private readonly UserStoredInformationRepository _userStoredInformationRepository;
+    private readonly OderDetailRepository _invoiceDetailRepository;
 
-    public OderService(OderRepository oderRepository, IHttpContextAccessor httpContextAccessor, UserRepository userRepository)
-    {
+
+    public OderService(
+        OderRepository oderRepository,
+        IHttpContextAccessor httpContextAccessor,
+        UserRepository userRepository,
+        PaymentMethodRepository paymentMethodRepository,
+        ShippingMethodRepository shippingMethodRepository,
+        UserStoredInformationRepository userStoredInformationRepository,
+        OderDetailRepository invoiceDetailRepository
+    ) {
         _oderRepository = oderRepository;
         _httpContextAccessor = httpContextAccessor;
         _userRepository = userRepository;
+        _paymentMethodRepository = paymentMethodRepository;
+        _shippingMethodRepository = shippingMethodRepository;
+        _userStoredInformationRepository = userStoredInformationRepository;
+        _invoiceDetailRepository = invoiceDetailRepository;
     }
 
     public async Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId)
     {
         // Check user role
-            var user = _httpContextAccessor.HttpContext?.User;
-            string UsernameClaim = user?.FindFirst(ClaimTypes.Name)?.Value!;
-            string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
-            User? AccountRequest = await _userRepository.GetUserByAccountIdAsync(accountId);
-            if (AccountRequest != null && AccountRequest.Username != UsernameClaim && RoleClaim != "Admin")
-            {
-                throw new Exception("You do not have permission to list this user info");
-            }
+        var user = _httpContextAccessor.HttpContext?.User;
+        string UsernameClaim = user?.FindFirst(ClaimTypes.Name)?.Value!;
+        string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
+        User? AccountRequest = await _userRepository.GetUserByAccountIdAsync(accountId);
+        if (AccountRequest != null && AccountRequest.Username != UsernameClaim && RoleClaim != "Admin")
+        {
+            throw new Exception("You do not have permission to list this user info");
+        }
         // End check user role
 
         IEnumerable<ListOderResponseModel> response = await _oderRepository.ListOrderByAccountId(accountId);
@@ -46,22 +66,45 @@ public class OderService : IOderService
         return response;
     }
 
-    public async Task<OderResponseModel> CreateNewOder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId, string status)
+    public async Task<string> CreateNewOder(Guid accountId,
+        decimal total,
+        string paymentMethod,
+        string shippingMethod,
+        UserInformationRequest userInfo,
+        List<ProductCheckout> products
+    )
     {
         try
         {
-            // Check user role
-            var user = _httpContextAccessor.HttpContext?.User;
-            string UsernameClaim = user?.FindFirst(ClaimTypes.Name)?.Value!;
-            string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
-            User? AccountRequest = await _userRepository.GetUserByAccountIdAsync(accountId);
-            if (AccountRequest != null && AccountRequest.Username != UsernameClaim && RoleClaim != "Admin")
-            {
-                throw new Exception("You do not have permission to list this user info");
-            }
-            // End check user role
+            Authorization authorization = new Authorization(_httpContextAccessor, _userRepository);
+            await authorization.IsValidUser(accountId);
 
-            return await _oderRepository.CreateOrder(accountId, total, paymentMethodId, shippingMethodId, storedInformationId, status);
+            PaymentMethod paymentMethods = await _paymentMethodRepository.GetPaymentMethodByName(paymentMethod.ToString()!);
+            Guid paymentMethodId = paymentMethods.id;
+
+            ShippingMethod shippingMethods = await _shippingMethodRepository.GetShippingMethodByName(shippingMethod.ToString()!);
+            Guid shippingMethodId = shippingMethods.id;
+
+            Guid userInfoId = _userStoredInformationRepository.GetUserStoredInformationByValues(accountId: accountId, address: userInfo.address, phone: userInfo.phone, name: userInfo.name).id;
+
+            var oder = await _oderRepository.CreateOrder(accountId, total, paymentMethodId, shippingMethodId, userInfoId);
+
+            foreach (var product in products)
+            {
+
+                foreach (var variant in product.variants)
+                {
+                    await _invoiceDetailRepository.CreateOderDetail(new OderDetailRequest
+                    {
+                        order_id = oder.id,
+                        product_variant_id = variant.id,
+                        quantity = variant.count,
+                        price = product.price,
+                        account_id = accountId
+                    });
+                }
+            }
+            return $"Order created successfully with id: {oder.id}";
         }
         catch (Exception ex)
         {

@@ -93,5 +93,24 @@ namespace infrastructure.Repositories
                 return conn.QueryFirstOrDefault<UserStoredInformation>(sql, new { userStoredInformationId });
             }
         }
+
+        public UserStoredInformation GetUserStoredInformationByValues(Guid accountId, string name, string phone, string address)
+        {
+            var sql = $@"
+                SELECT id as {nameof(UserStoredInformation.id)},
+                    account_id as {nameof(UserStoredInformation.account_id)},
+                    info as {nameof(UserStoredInformation.info)}
+                FROM DEV.USERSTOREDINFOMATION
+                WHERE account_id = @accountId
+                    AND info->>'name' = @name
+                    AND info->>'phone' = @phone
+                    AND info->>'address' = @address
+                ;
+            ";
+            using (var conn = _dataSource.OpenConnection())
+            {
+                return conn.QueryFirstOrDefault<UserStoredInformation>(sql, new { accountId, name, phone, address });
+            }
+        }
     }
 }
