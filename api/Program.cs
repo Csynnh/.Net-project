@@ -3,7 +3,6 @@ using infrastructure;
 using infrastructure.Repositories;
 using service;
 using infrastructure.MigrationRunner;
-using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -82,18 +81,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
-// Configure AWS S3 service
-var awsOptions = new AWSOptions
-{
-    Credentials = new Amazon.Runtime.BasicAWSCredentials(
-        Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID"),
-        Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY")
-    ),
-    Region = RegionEndpoint.GetBySystemName(Environment.GetEnvironmentVariable("AWS_DEFAULT_REGION") ?? "us-east-1")
-};
-builder.Services.AddDefaultAWSOptions(awsOptions);
-builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddHttpContextAccessor();
 // Configure JWT authentication
 var jwtSettings = configuration.GetSection("Jwt");

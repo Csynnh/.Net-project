@@ -1,5 +1,3 @@
-using Amazon.S3;
-
 namespace Api.TransferModels
 {
 

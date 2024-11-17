@@ -3,7 +3,6 @@ using api.TransferModels;
 using infrastructure.DataModels;
 using Microsoft.AspNetCore.Mvc;
 using service;
-using Amazon.S3;
 using Microsoft.AspNetCore.Authorization;
 
 namespace library.Controllers;
@@ -11,14 +10,12 @@ namespace library.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly ILogger<ProductController> _logger;
-    private readonly IAmazonS3 _s3Client;
     private readonly ProductService _productService;
 
-    public ProductController(ILogger<ProductController> logger, ProductService productService, IAmazonS3 s3Client)
+    public ProductController(ILogger<ProductController> logger, ProductService productService)
     {
         _logger = logger;
         _productService = productService;
-        _s3Client = s3Client;
     }
 
 
@@ -113,7 +110,7 @@ public class ProductController : ControllerBase
             return new ResponseDto()
             {
                 MessageToClient = "Successfully created a product",
-                ResponseData = await _productService.CreateProductAsync(dto, _s3Client)
+                ResponseData = await _productService.CreateProductAsync(dto)
             };
         }
         catch (Exception ex)

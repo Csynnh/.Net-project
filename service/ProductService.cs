@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Amazon.S3;
 using infrastructure.DataModels;
 using infrastructure.QueryModels;
 using infrastructure.Repositories;
@@ -9,7 +8,7 @@ namespace service;
 // IProductService.cs
 public interface IProductService
 {
-    Task<string> CreateProductAsync(CreateProductModel ProductRequest, IAmazonS3 _s3Client);
+    Task<string> CreateProductAsync(CreateProductModel ProductRequest);
     Task<ProductModelResponse> GetProductByIdAsync(Guid id);
     Task<PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string orderStatus);
@@ -50,48 +49,54 @@ public class ProductService : IProductService
         var response = await _repository.ListProductByOderStatusAsync(accountId, orderStatus);
         return response;
     }
-    public async Task<string> CreateProductAsync(CreateProductModel ProductRequest, IAmazonS3 _s3Client)
+    public async Task<string> CreateProductAsync(CreateProductModel ProductRequest)
     {
-        // Check if the product already exists based on your criteria
-        var existingProduct = await _repository.IsProductExistAsync(ProductRequest.ProductName, ProductRequest.Color, ProductRequest.Size);
-        if (existingProduct)
+        try
         {
-            throw new InvalidOperationException($"Product with name: '{ProductRequest.ProductName}' - color: '{ProductRequest.Color}' - size '{ProductRequest.Size}' already exists");
+            // Check if the product already exists based on your criteria
+            var existingProduct = await _repository.IsProductExistAsync(ProductRequest.ProductName, ProductRequest.Color, ProductRequest.Size);
+            if (existingProduct)
+            {
+                throw new InvalidOperationException($"Product with name: '{ProductRequest.ProductName}' - color: '{ProductRequest.Color}' - size '{ProductRequest.Size}' already exists");
+            }
+            var uploader = new BlodUploader();
+            string image_url = await uploader.UploadFileAsync(ProductRequest.Images.ImageThumbnail);
+            List<string> additionalImageUrls = new List<string>();
+            foreach (var additionalImage in ProductRequest.Images.AdditionalImages)
+            {
+                additionalImageUrls.Add(await uploader.UploadFileAsync(additionalImage));
+            }
+
+            string images = JsonSerializer.Serialize(new ProductImagesModel()
+            {
+                ImageThumbnail = image_url,
+                AdditionalImages = additionalImageUrls
+            }
+            );
+
+            ProductModel productModel = new ProductModel()
+            {
+                Name = ProductRequest.ProductName,
+                Description = ProductRequest.ProductDescription,
+                Size = ProductRequest.Size.ToUpper(),
+                Color = ProductRequest.Color.ToUpper(),
+                Type = ProductRequest.Type.ToUpper(),
+                Price = ProductRequest.Price,
+                Inventory = ProductRequest.Inventory,
+                Details = JsonSerializer.Serialize(ProductRequest.Details),
+                Images = images
+            };
+
+
+
+            await _repository.AddProductAsync(productModel);
+            return $"Product created successfully with name: {ProductRequest.ProductName}";
         }
-
-        // Handle image upload to S3
-        var uploader = new S3Uploader(_s3Client);
-        string image_url = await uploader.UploadImageAsync(ProductRequest.Images.ImageThumbnail);
-        List<string> additionalImageUrls = new List<string>();
-        foreach (var additionalImage in ProductRequest.Images.AdditionalImages)
+        catch (Exception ex)
         {
-            additionalImageUrls.Add(await uploader.UploadImageAsync(additionalImage));
+
+            throw new InvalidOperationException($"An error occurred while creating the product: {ex.Message}");
         }
-
-        string images = JsonSerializer.Serialize(new ProductImagesModel()
-        {
-            ImageThumbnail = image_url,
-            AdditionalImages = additionalImageUrls
-        }
-        );
-
-        ProductModel productModel = new ProductModel()
-        {
-            Name = ProductRequest.ProductName,
-            Description = ProductRequest.ProductDescription,
-            Size = ProductRequest.Size.ToUpper(),
-            Color = ProductRequest.Color.ToUpper(),
-            Type = ProductRequest.Type.ToUpper(),
-            Price = ProductRequest.Price,
-            Inventory = ProductRequest.Inventory,
-            Details = JsonSerializer.Serialize(ProductRequest.Details),
-            Images = images
-        };
-
-
-
-        await _repository.AddProductAsync(productModel);
-        return $"Product created successfully with name: {ProductRequest.ProductName}";
     }
 
 }
