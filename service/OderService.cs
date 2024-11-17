@@ -99,7 +99,6 @@ public class OderService : IOderService
                         order_id = oder.id,
                         product_variant_id = variant.id,
                         quantity = variant.count,
-                        price = product.price,
                         account_id = accountId
                     });
                 }

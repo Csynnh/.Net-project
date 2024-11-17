@@ -43,15 +43,11 @@ public class ListOderResponseModel
 public class ProductCheckout
 {
     public string id { get; set; }
-    public string name { get; set; }
-    public decimal price { get; set; }
     public List<Variant> variants { get; set; }
 }
 
 public class Variant
 {
     public Guid id { get; set; }
-    public string color { get; set; }
-    public string image { get; set; }
     public int count { get; set; }
 }
