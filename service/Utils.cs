@@ -49,7 +49,7 @@ public class Authorization
     _httpContextAccessor = httpContextAccessor;
     _userRepository = userRepository;
   }
-  public async Task<bool> IsValidUser(Guid accountId)
+  public async Task<bool> ValidateUser(Guid accountId)
   {
     var user = _httpContextAccessor.HttpContext?.User;
     string UsernameClaim = user?.FindFirst(ClaimTypes.Name)?.Value!;
@@ -59,7 +59,6 @@ public class Authorization
     {
       throw new UnauthorizedAccessException("You do not have permission to list this user info");
     }
-
     return true;
   }
 }

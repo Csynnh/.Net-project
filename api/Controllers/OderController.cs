@@ -1,13 +1,9 @@
-using System.ComponentModel.DataAnnotations;
-using api.CustomDataAnnotations;
 using api.Filters;
 using api.Request;
 using api.TransferModels;
-using infrastructure.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using service;
-using ShopAPI.Filters;
 
 namespace library.Controllers;
 
@@ -25,13 +21,13 @@ public class OderController : ControllerBase
     [Authorize(Roles = "User,Admin")]
     [HttpGet]
     [Route("/api/oder/{account_id}")]
-    public async Task<ResponseDto> Get([FromRoute] Guid account_id)
+    public async Task<ResponseDto> Get([FromRoute] Guid account_id, [FromQuery] string status)
     {
         HttpContext.Response.StatusCode = 200;
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = await _oderService.ListOderByAccountId(account_id)
+            ResponseData = await _oderService.ListOderByAccountId(account_id, status)
         };
     }
 

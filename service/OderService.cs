@@ -7,7 +7,7 @@ namespace service;
 
 public interface IOderService
 {
-    Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId);
+    Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId, string status);
     Task<string> CreateNewOder(
         Guid accountId,
         decimal total,
@@ -48,7 +48,7 @@ public class OderService : IOderService
         _invoiceDetailRepository = invoiceDetailRepository;
     }
 
-    public async Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId)
+    public async Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId, string status)
     {
         // Check user role
         var user = _httpContextAccessor.HttpContext?.User;
@@ -61,7 +61,7 @@ public class OderService : IOderService
         }
         // End check user role
 
-        IEnumerable<ListOderResponseModel> response = await _oderRepository.ListOrderByAccountId(accountId);
+        IEnumerable<ListOderResponseModel> response = await _oderRepository.ListOrderByAccountId(accountId, status);
 
         return response;
     }
@@ -77,7 +77,7 @@ public class OderService : IOderService
         try
         {
             Authorization authorization = new Authorization(_httpContextAccessor, _userRepository);
-            await authorization.IsValidUser(accountId);
+            await authorization.ValidateUser(accountId);
 
             PaymentMethod paymentMethods = await _paymentMethodRepository.GetPaymentMethodByName(paymentMethod.ToString()!);
             Guid paymentMethodId = paymentMethods.id;
