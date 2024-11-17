@@ -127,7 +127,7 @@ public class OderRepository : IOderRepository
             LEFT JOIN DEV.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
             LEFT JOIN DEV.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
             LEFT JOIN DEV.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
-            ODERS BY od.created_at DESC
+            ORDER BY od.created_at DESC
             WHERE od.account_id = @accountId" + (string.IsNullOrEmpty(status) ? "" : " AND od.status = @status") + @";
         ";
         using var conn = _dataSource.OpenConnection();
