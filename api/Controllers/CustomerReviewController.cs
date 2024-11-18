@@ -20,21 +20,21 @@ public class CustomerReviewController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/reviews")]
+    [Route("/api/customer_reviews")]
     public ResponseDto Get()
     {
         HttpContext.Response.StatusCode = 200;
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = _customerReviewService.GetCustomerReviews()
+            ResponseData = _customerReviewService.GetCustomerReviewForFeed()
         };
     }
 
     [HttpPost]
     [ValidateModel]
-    [Route("/api/reviews")]
-    public ResponseDto Post([FromBody] CreateReviewRequestDto dto)
+    [Route("/api/customer_reviews")]
+    public ResponseDto Post([FromBody] CreateCustomerReviewRequestDto dto)
     {
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
         return new ResponseDto()
@@ -46,8 +46,8 @@ public class CustomerReviewController : ControllerBase
 
     [HttpPut]
     [ValidateModel]
-    [Route("/api/reviews/{id}")]
-    public ResponseDto Put([FromRoute] int id, [FromBody] UpdateReviewRequestDto dto)
+    [Route("/api/customer_reviews/{id}")]
+    public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateCustomerReviewRequestDto dto)
     {
         HttpContext.Response.StatusCode = 201;
         return new ResponseDto()
@@ -58,8 +58,8 @@ public class CustomerReviewController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("/api/reviews/{id}")]
-    public ResponseDto Delete([FromRoute] int id)
+    [Route("/api/customer_reviews/{id}")]
+    public ResponseDto Delete([FromRoute] Guid id)
     {
         _customerReviewService.DeleteCustomerReview(id);
         return new ResponseDto()

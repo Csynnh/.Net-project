@@ -1,14 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using api.CustomDataAnnotations;
+using infrastructure.EnumVariables;
 
 namespace api.TransferModels;
 
 // CreateInvoiceRequestDto.cs
-public class CreateInvoiceRequestDto
-{
-    public int id  { get; set; }  
-    public int account_id  { get; set; }  
-    public DateTime created_date { get; set; }  
-    public decimal price { get; set; }  
-    public string status { get; set; } = "Đang xử lý";  
-}
