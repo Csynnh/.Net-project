@@ -31,6 +31,12 @@ public class ProductService : IProductService
         return response;
     }
 
+    public async Task<Guid> GetIdByName(string name)
+    {
+        var response = await _repository.GetIdByName(name);
+        return response;
+    }
+
     public async Task<PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
     {
         return await _repository.ListProductByTypeNameAsync(name, pageNumber, pageSize, size, minPrice, maxPrice);

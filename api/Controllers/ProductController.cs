@@ -34,6 +34,30 @@ public class ProductController : ControllerBase
 
 
     [HttpGet]
+    [Route("/api/products")]
+    public async Task<ResponseDto> GetIdByName([FromQuery] string name)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = 200;
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully fetched",
+                ResponseData = await _productService.GetIdByName(name)
+            };
+        }
+        catch (Exception ex)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return new ResponseDto()
+            {
+                MessageToClient = $"An error occurred while fetching the products: {ex.Message}",
+                ResponseData = null
+            };
+        }
+    }
+
+    [HttpGet]
     [Route("/api/products/collections/{name}")]
     public async Task<ResponseDto> ListProductByTypeName(
     [FromRoute] string name,

@@ -1,3 +1,4 @@
+using System.Globalization;
 using infrastructure.Contansts;
 using infrastructure.DataModels;
 namespace api.Request;
@@ -15,3 +16,16 @@ public class CreateOderRequest
     public List<ProductCheckout> products { get; set; } = new List<ProductCheckout>();
 
 }
+
+public class EmailSentByUserRequest
+{
+    public string userName { get; set; }
+
+    public string userGender { get; set; }
+
+    public string userPhone { get; set; }
+
+    public string typeOfProduct { get; set; }
+
+    public string message { get; set; }
+};
