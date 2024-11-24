@@ -57,3 +57,14 @@ public class OrderStatusSummary
     public string Status { get; set; }
     public int Total { get; set; }
 }
+
+public class RetrieveChartDataResponse
+{
+    public Guid id { get; set; }
+    public int tax_rate { get; set; }
+    public int units_sold { get; set; }
+    public decimal price { get; set; }
+    public string item_name { get; set; }
+    public string type { get; set; }
+    public DateTime created_at { get; set; }
+}

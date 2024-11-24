@@ -11,6 +11,7 @@ public interface IOderRepository
     Task<ListOderResponseModel> GetOrderById(Guid id);
     Task<IEnumerable<ListOderResponseModel>> ListOrderByAccountId(Guid accountId, string status = "");
     Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId);
+    Task<IEnumerable<RetrieveChartDataResponse>> RetrieveChartData(DateTime startDate, DateTime endDate);
 }
 public class OderRepository : IOderRepository
 {
@@ -147,10 +148,10 @@ public class OderRepository : IOderRepository
 
         return orders;
     }
-public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string status)
-{
-    // Xây dựng câu lệnh SQL
-    var sql = $@"
+    public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string status)
+    {
+        // Xây dựng câu lệnh SQL
+        var sql = $@"
         SELECT
         od.id,
         od.account_id,
@@ -196,39 +197,39 @@ public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string s
         ORDER BY od.created_at DESC;
     ";
 
-    using var conn = _dataSource.OpenConnection();
-    var responses = await conn.QueryAsync<dynamic>(sql, new { status });
+        using var conn = _dataSource.OpenConnection();
+        var responses = await conn.QueryAsync<dynamic>(sql, new { status });
 
-    // Ánh xạ dữ liệu trả về từ query vào các đối tượng của ứng dụng
-    var orders = responses.Select(x => new ListOderResponseModel
+        // Ánh xạ dữ liệu trả về từ query vào các đối tượng của ứng dụng
+        var orders = responses.Select(x => new ListOderResponseModel
+        {
+            id = x.id,
+            account_id = x.account_id,
+            created_at = x.created_at,
+            total = x.total,
+            status = x.status,
+            paymend_method = JsonSerializer.Deserialize<object>(x.payment_method.ToString()),
+            user_info = JsonSerializer.Deserialize<UserInformationRequest>(x.info.ToString()!),
+            shipping_method = JsonSerializer.Deserialize<ShippingMethod>(x.shipping_method.ToString()!),
+            list_products = x.list_products != null ? JsonSerializer.Deserialize<List<object>>(x.list_products.ToString()!) : new List<ProductModel>()
+        }).ToList();
+
+        return orders;
+    }
+
+    public async Task<List<OrderStatusSummary>> GetTotalOrdersGroupedByStatus()
     {
-        id = x.id,
-        account_id = x.account_id,
-        created_at = x.created_at,
-        total = x.total,
-        status = x.status,
-        paymend_method = JsonSerializer.Deserialize<object>(x.payment_method.ToString()),
-        user_info = JsonSerializer.Deserialize<UserInformationRequest>(x.info.ToString()!),
-        shipping_method = JsonSerializer.Deserialize<ShippingMethod>(x.shipping_method.ToString()!),
-        list_products = x.list_products != null ? JsonSerializer.Deserialize<List<object>>(x.list_products.ToString()!) : new List<ProductModel>()
-    }).ToList();
-
-    return orders;
-}
- 
-public async Task<List<OrderStatusSummary>> GetTotalOrdersGroupedByStatus()
-{
-    var sql = @"
+        var sql = @"
         SELECT status, COUNT(*) as total
         FROM DEV.ORDERS
         GROUP BY status;
     ";
 
-    using var conn = _dataSource.OpenConnection();
-    var results = await conn.QueryAsync<OrderStatusSummary>(sql);
+        using var conn = _dataSource.OpenConnection();
+        var results = await conn.QueryAsync<OrderStatusSummary>(sql);
 
-    return results.ToList();
-}
+        return results.ToList();
+    }
 
     public async Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId)
     {
@@ -259,6 +260,31 @@ public async Task<List<OrderStatusSummary>> GetTotalOrdersGroupedByStatus()
         const string sql = "UPDATE DEV.ORDERS SET Status = @NextStatus WHERE Id = @OrderId AND Status = @CurrentStatus";
         using var conn = _dataSource.OpenConnection();
         var result = await conn.ExecuteAsync(sql, new { OrderId = orderId, CurrentStatus = currentStatus, NextStatus = nextStatus });
-        return result > 0; // Trả về true nếu cập nhật thành công
+        return result > 0;
+    }
+
+    public async Task<IEnumerable<RetrieveChartDataResponse>> RetrieveChartData(DateTime startDate, DateTime endDate)
+    {
+        var sql = $@"
+            SELECT
+                od.id,
+                10 AS tax_rate,
+                odt.quantity AS units_sold,
+                p.price AS price,
+                p.name AS item_name,
+                t.type AS type,
+                od.created_at
+            FROM DEV.ORDERS od
+            LEFT JOIN DEV.ORDERDETAILS odt ON odt.order_id = od.id
+            LEFT JOIN DEV.PRODUCTVARIANTS pv ON pv.id = odt.product_variant_id
+            LEFT JOIN DEV.PRODUCTS p ON p.id = pv.product_id
+            LEFT JOIN DEV.TYPES t ON t.id = p.type_id
+            WHERE od.created_at >= @startDate::timestamp
+            AND od.created_at < @endDate::timestamp
+            GROUP BY created_at, od.id, odt.quantity, p.price, p.name, t.type
+            ORDER BY created_at, od.id, odt.quantity, p.price, p.name, t.type;
+        ";
+        using var conn = _dataSource.OpenConnection();
+        return await conn.QueryAsync<RetrieveChartDataResponse>(sql, new { startDate, endDate });
     }
 }

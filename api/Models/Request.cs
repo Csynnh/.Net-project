@@ -29,3 +29,8 @@ public class EmailSentByUserRequest
 
     public string message { get; set; }
 };
+
+public class RetrieveChartDataRequest
+{
+    public string ChartType { get; set; } = CHARTTYPE.DAILY;
+}

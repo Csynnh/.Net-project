@@ -16,7 +16,7 @@ public interface IOderService
         UserInformationRequest userInfo,
         List<ProductCheckout> products
     );
-
+    Task<IEnumerable<RetrieveChartDataResponse>> RetrieveChartData(string ChartType);
 }
 
 public class OderService : IOderService
@@ -178,17 +178,32 @@ public async Task<bool> UpdateToNextOrderStatus(Guid orderId)
         }
     }
 
-    // public Invoice UpdateInvoice(Guid invoiceId, decimal total, Status status, Checkout_method checkoutMethod, Shipping_method shippingMethod)
-    // {
-    //     return _oderRepository.UpdateInvoice(invoiceId, total, status, checkoutMethod, shippingMethod);
-    // }
+    public async Task<IEnumerable<RetrieveChartDataResponse>> RetrieveChartData(string ChartType)
+    {
+        DateTime StartDateTime;
+        DateTime EndDateTime;
+        if (ChartType == "DAILY")
+        {
+            DateTime today = DateTime.Today;
+            StartDateTime = today.Date;
+            EndDateTime = today.Date.AddHours(23).AddMinutes(59);
+        }
+        else if (ChartType == "WEEKLY")
+        {
+            StartDateTime = DateTime.Today.AddDays(-1 * (int)(DateTime.Today.DayOfWeek));
+            EndDateTime = StartDateTime.AddDays(6);
+        }
+        else if (ChartType == "MONTHLY")
+        {
+            StartDateTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            EndDateTime = StartDateTime.AddMonths(1).AddDays(-1);
+        }
+        else
+        {
+            throw new Exception("Invalid chart type");
+        }
 
-    // public void DeleteInvoice(Guid id )
-    // {
-    //     var result = _oderRepository.DeleteInvoice(id );
-    //     if (!result)
-    //     {
-    //         throw new Exception("Could not delete invoice");
-    //     }
-    // }
+        var response = await _oderRepository.RetrieveChartData(StartDateTime, EndDateTime);
+        return response;
+    }
 }
