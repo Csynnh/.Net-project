@@ -190,8 +190,8 @@ public async Task<bool> UpdateToNextOrderStatus(Guid orderId)
         }
         else if (ChartType == "WEEKLY")
         {
-            StartDateTime = DateTime.Today.AddDays(-1 * (int)(DateTime.Today.DayOfWeek));
-            EndDateTime = StartDateTime.AddDays(6);
+            StartDateTime = DateTime.Today.AddDays(-7);
+            EndDateTime = StartDateTime.AddDays(6).AddHours(23).AddMinutes(59);
         }
         else if (ChartType == "MONTHLY")
         {
