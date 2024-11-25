@@ -147,6 +147,88 @@ public class OderRepository : IOderRepository
 
         return orders;
     }
+public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string status)
+{
+    // Xây dựng câu lệnh SQL
+    var sql = $@"
+        SELECT
+        od.id,
+        od.account_id,
+        od.created_at,
+        od.total,
+        od.status,
+        pm.payment_method,
+        jsonb_build_object(
+            'id', sm.id,
+            'shipping_name', sm.shipping_name,
+            'shipping_cost', sm.shipping_cost
+        ) AS shipping_method,
+        usi.info,
+        (
+        SELECT json_agg(row_to_json(lp))
+        FROM (
+            SELECT
+            p.Name,
+            p.Price,
+            p.Inventory,
+            t.Type,
+            jsonb_agg(jsonb_build_object(
+                'Images', pv.Images->>'ImageThumbnail',
+                'Size', s.Size,
+                'Color', c.Color,
+                'Quantity', odt.Quantity
+            )) AS Variants
+            FROM DEV.Products p
+            JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+            JOIN DEV.Colors c ON pv.Color_Id = c.Id
+            JOIN DEV.Types t ON p.Type_Id = t.Id
+            JOIN DEV.ORDERDETAILS odt ON odt.product_variant_id = pv.id
+            WHERE odt.order_id = od.id
+            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
+        ) lp
+        ) AS list_products
+        FROM DEV.ORDERS od
+        LEFT JOIN DEV.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
+        LEFT JOIN DEV.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
+        LEFT JOIN DEV.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
+        WHERE (@status = 'ALL' OR od.status = @status)  -- Điều kiện lọc linh hoạt
+        ORDER BY od.created_at DESC;
+    ";
+
+    using var conn = _dataSource.OpenConnection();
+    var responses = await conn.QueryAsync<dynamic>(sql, new { status });
+
+    // Ánh xạ dữ liệu trả về từ query vào các đối tượng của ứng dụng
+    var orders = responses.Select(x => new ListOderResponseModel
+    {
+        id = x.id,
+        account_id = x.account_id,
+        created_at = x.created_at,
+        total = x.total,
+        status = x.status,
+        paymend_method = JsonSerializer.Deserialize<object>(x.payment_method.ToString()),
+        user_info = JsonSerializer.Deserialize<UserInformationRequest>(x.info.ToString()!),
+        shipping_method = JsonSerializer.Deserialize<ShippingMethod>(x.shipping_method.ToString()!),
+        list_products = x.list_products != null ? JsonSerializer.Deserialize<List<object>>(x.list_products.ToString()!) : new List<ProductModel>()
+    }).ToList();
+
+    return orders;
+}
+ 
+public async Task<List<OrderStatusSummary>> GetTotalOrdersGroupedByStatus()
+{
+    var sql = @"
+        SELECT status, COUNT(*) as total
+        FROM DEV.ORDERS
+        GROUP BY status;
+    ";
+
+    using var conn = _dataSource.OpenConnection();
+    var results = await conn.QueryAsync<OrderStatusSummary>(sql);
+
+    return results.ToList();
+}
 
     public async Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId)
     {
