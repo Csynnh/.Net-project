@@ -30,6 +30,33 @@ public class OderController : ControllerBase
             ResponseData = await _oderService.ListOderByAccountId(account_id, status)
         };
     }
+    [Authorize(Roles = "User,Admin")]
+    [HttpGet]
+    [Route("/api/oder/status/{status}")]
+    public async Task<ResponseDto> GetWithStatus([FromRoute] string status)
+    {
+        HttpContext.Response.StatusCode = 200;
+        return new ResponseDto()
+        {
+            MessageToClient = "Successfully fetched",
+            ResponseData = await _oderService.ListOrderByStatus(status)
+        };
+    }
+    [Authorize(Roles = "User,Admin")]
+    [HttpGet("orders/total-grouped-by-status")]
+    public async Task<IActionResult> GetTotalOrders()
+    {
+        try
+        {
+            var result = await _oderService.GetTotalOrders();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
 
     [Authorize(Roles = "User,Admin")]
     [HttpPost]
