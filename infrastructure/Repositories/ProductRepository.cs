@@ -51,6 +51,22 @@ namespace infrastructure.Repositories
             return product;
         }
 
+
+        public async Task<Guid> GetIdByName(string name)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+
+            var query = @"
+                SELECT Id
+                FROM DEV.Products 
+                WHERE Name=@name
+                ";
+
+            var productId = await conn.QueryFirstOrDefaultAsync<dynamic>(query, new { Name = $"{name}" });
+
+            return productId.id;
+        }
+
         public async Task<DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice)
         {
             await using var conn = await _dataSource.OpenConnectionAsync();
@@ -171,7 +187,6 @@ namespace infrastructure.Repositories
                 PageSize = pageSize
             };
         }
-
 
 
 
