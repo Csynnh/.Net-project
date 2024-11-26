@@ -3,7 +3,7 @@ namespace infrastructure.Contansts;
 
 public class Status
 {
-    public static string CONFIRMING = "CONFIRMING";
+    public static string CONFIRMING = "NEED_CONFIRM";
     public static string PREPARING = "PREPARING";
     public static string SHIPPING = "SHIPPING";
     public static string SUCCESSFULLY = "SUCCESSFULLY";

@@ -240,4 +240,25 @@ public async Task<List<OrderStatusSummary>> GetTotalOrdersGroupedByStatus()
         using var conn = _dataSource.OpenConnection();
         return await conn.QueryFirstAsync<OderResponseModel>(sql, new { accountId, total, paymentMethodId, shippingMethodId, storedInformationId });
     }
+
+    private string GetNextStatus(string currentStatus)
+    {
+        return currentStatus switch
+        {
+            "CONFIRMING" => "PREPARING",
+            "PREPARING" => "SHIPPING",
+            "SHIPPING" => "SUCCESSFULLY",
+            _ => throw new InvalidOperationException("Invalid current status or no further status available")
+        };
+    }
+
+    public async Task<bool> UpdateToNextOrderStatus(Guid orderId, string currentStatus)
+    {
+        var nextStatus = GetNextStatus(currentStatus);
+
+        const string sql = "UPDATE DEV.ORDERS SET Status = @NextStatus WHERE Id = @OrderId AND Status = @CurrentStatus";
+        using var conn = _dataSource.OpenConnection();
+        var result = await conn.ExecuteAsync(sql, new { OrderId = orderId, CurrentStatus = currentStatus, NextStatus = nextStatus });
+        return result > 0; // Trả về true nếu cập nhật thành công
+    }
 }

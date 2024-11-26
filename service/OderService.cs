@@ -112,6 +112,25 @@ public async Task<List<object>> GetTotalOrders() // Trả vè số lượng orde
     return result;
 }
 
+public async Task<bool> UpdateToNextOrderStatus(Guid orderId)
+{
+     // Check user role
+    // var user = _httpContextAccessor.HttpContext?.User;
+    // string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
+    // // Only allow Admin to list orders by status
+    // if (RoleClaim != "Admin")
+    // {
+    //     throw new Exception("You do not have permission to list orders by status");
+    // }
+
+    // Lấy thông tin đơn hàng
+    var order = await _oderRepository.GetOrderById(orderId);
+    if (order == null)
+        throw new Exception("Order not found");
+
+    // Cập nhật trạng thái tiếp theo
+    return await _oderRepository.UpdateToNextOrderStatus(orderId, order.status);
+}
 
     public async Task<string> CreateNewOder(Guid accountId,
         decimal total,
