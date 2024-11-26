@@ -93,6 +93,18 @@ public class OderController : ControllerBase
         }
     }
 
+    // [Authorize(Roles = "User,Admin")]
+    [HttpPut("/api/oder/next-status/{id}")]
+    public async Task<IActionResult> UpdateToNextOrderStatus([FromRoute] Guid id)
+    {
+         var result = await _oderService.UpdateToNextOrderStatus(id);
+         if (result)
+            return Ok(new { message = "Order status updated to the next step successfully" });
+        return BadRequest(new { message = "Failed to update order status" });
+    }
+
+    // http://192.168.1.8/admin/api/oder/next-status/14565dcb-7fbc-4b6b-bce2-2e2f019668e
+    // http://localhost:api/oder/next-status/14565dcb-7fbc-4b6b-bce2-2e2f019668e8
     // [HttpPut]
     // [ValidateModel]
     // [Route("/api/oder/{id}")]
