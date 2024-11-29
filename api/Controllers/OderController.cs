@@ -97,35 +97,35 @@ public class OderController : ControllerBase
     [HttpPut("/api/oder/next-status/{id}")]
     public async Task<IActionResult> UpdateToNextOrderStatus([FromRoute] Guid id)
     {
-         var result = await _oderService.UpdateToNextOrderStatus(id);
-         if (result)
+        var result = await _oderService.UpdateToNextOrderStatus(id);
+        if (result)
             return Ok(new { message = "Order status updated to the next step successfully" });
         return BadRequest(new { message = "Failed to update order status" });
     }
 
-    // http://192.168.1.8/admin/api/oder/next-status/14565dcb-7fbc-4b6b-bce2-2e2f019668e
-    // http://localhost:api/oder/next-status/14565dcb-7fbc-4b6b-bce2-2e2f019668e8
-    // [HttpPut]
-    // [ValidateModel]
-    // [Route("/api/oder/{id}")]
-    // public ResponseDto Put([FromRoute] Guid id, [FromBody] UpdateInvoiceRequestDto dto)
-    // {
-    //     HttpContext.Response.StatusCode = 201;
-    //     return new ResponseDto()
-    //     {
-    //         MessageToClient = "Successfully updated",
-    //         ResponseData = _oderService.UpdateInvoice(id, dto.price, dto.status, dto.checkout_method, dto.shipping_method)
-    //     };
-    // }
-
-    // [HttpDelete]
-    // [Route("/api/oder/{id}")]
-    // public ResponseDto Delete([FromRoute] Guid id)
-    // {
-    //     _oderService.DeleteInvoice(id);
-    //     return new ResponseDto()
-    //     {
-    //         MessageToClient = "Successfully deleted"
-    //     };
-    // }
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    [Route("/api/oder/retrieve-chart-data")]
+    public async Task<ResponseDto> RetrieveChartData([FromBody] RetrieveChartDataRequest dto)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully Retrieve Chart Data",
+                ResponseData = await _oderService.RetrieveChartData(dto.ChartType)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while Retrieving Chart Data");
+            HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return new ResponseDto()
+            {
+                MessageToClient = "An error occurred while Retrieving Chart Data",
+                ResponseData = null
+            };
+        }
+    }
 }

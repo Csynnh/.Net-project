@@ -24,3 +24,10 @@ public class SHIPPINGMETHOD
     public static string STANDARD_SHIPPING = "STANDARD_SHIPPING";
     public static string EXPRESS_SHIPPING = "EXPRESS_SHIPPING";
 }
+
+public class CHARTTYPE
+{
+    public static string DAILY = "DAILY";
+    public static string WEEKLY = "WEEKLY";
+    public static string MONTHLY = "MONTHLY";
+}
