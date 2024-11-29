@@ -3,6 +3,7 @@ using api.Request;
 using api.TransferModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using service;
 
 namespace library.Controllers;
@@ -11,11 +12,14 @@ public class OderController : ControllerBase
 {
     private readonly ILogger<OderController> _logger;
     private readonly OderService _oderService;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-    public OderController(ILogger<OderController> logger, OderService oderService)
+
+    public OderController(ILogger<OderController> logger, OderService oderService, IHubContext<NotificationHub> hubContext)
     {
         _logger = logger;
         _oderService = oderService;
+        _hubContext = hubContext;
     }
 
     [Authorize(Roles = "User,Admin")]
@@ -68,18 +72,22 @@ public class OderController : ControllerBase
         try
         {
             HttpContext.Response.StatusCode = StatusCodes.Status201Created;
-            return new ResponseDto()
-            {
-                MessageToClient = "Successfully created an oder",
-                ResponseData = await _oderService.CreateNewOder(
+            var response = await _oderService.CreateNewOder(
                     accountId: dto.account_id,
                     total: dto.price,
                     paymentMethod: dto.paymentMethod,
                     shippingMethod: dto.shippingMethod,
                     userInfo: dto.userInfo,
                     products: dto.products
-                )
+                );
+            var results = new ResponseDto()
+            {
+                MessageToClient = "Successfully created an oder",
+                ResponseData = response
             };
+            await _hubContext.Clients.All.SendAsync("ReceiveOrderNotification", (object)response);
+
+            return results;
         }
         catch (Exception ex)
         {

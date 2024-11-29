@@ -8,7 +8,7 @@ namespace service;
 public interface IOderService
 {
     Task<IEnumerable<ListOderResponseModel>> ListOderByAccountId(Guid accountId, string status);
-    Task<string> CreateNewOder(
+    Task<dynamic> CreateNewOder(
         Guid accountId,
         decimal total,
         string paymentMethod,
@@ -132,7 +132,7 @@ public async Task<bool> UpdateToNextOrderStatus(Guid orderId)
     return await _oderRepository.UpdateToNextOrderStatus(orderId, order.status);
 }
 
-    public async Task<string> CreateNewOder(Guid accountId,
+    public async Task<dynamic> CreateNewOder(Guid accountId,
         decimal total,
         string paymentMethod,
         string shippingMethod,
@@ -169,7 +169,11 @@ public async Task<bool> UpdateToNextOrderStatus(Guid orderId)
                     });
                 }
             }
-            return $"Order created successfully with id: {oder.id}";
+            return new {
+                message = $"Order #{oder.id.ToString().Substring(0, 8)} has been placed and is pending confirmation.",
+                createdAt = oder.created_at,
+                Id = oder.id
+            };
         }
         catch (Exception ex)
         {

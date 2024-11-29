@@ -236,7 +236,7 @@ public class OderRepository : IOderRepository
         var sql = $@"
             INSERT INTO DEV.ORDERS (account_id, total, payment_method_id, shipping_method_id, stored_information_id, status)
             VALUES (@accountId, @total, @paymentMethodId, @shippingMethodId, @storedInformationId, 'CONFIRMING')
-            RETURNING id, account_id, total, payment_method_id, shipping_method_id, stored_information_id, status;
+            RETURNING id, account_id, total, payment_method_id, shipping_method_id, stored_information_id, status, created_at;
         ";
         using var conn = _dataSource.OpenConnection();
         return await conn.QueryFirstAsync<OderResponseModel>(sql, new { accountId, total, paymentMethodId, shippingMethodId, storedInformationId });
