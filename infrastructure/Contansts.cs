@@ -3,9 +3,10 @@ namespace infrastructure.Contansts;
 
 public class Status
 {
-    public static string PROCESSING = "PROCESSING";
-    public static string COMPLETED = "COMPLETED";
-    public static string CANCELLED = "CANCELLED";
+    public static string CONFIRMING = "NEED_CONFIRM";
+    public static string PREPARING = "PREPARING";
+    public static string SHIPPING = "SHIPPING";
+    public static string SUCCESSFULLY = "SUCCESSFULLY";
 }
 
 public class PAYMENTMETHOD

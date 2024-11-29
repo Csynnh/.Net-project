@@ -66,6 +66,72 @@ public class OderService : IOderService
         return response;
     }
 
+ public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string status)
+{
+    // Check user role
+    var user = _httpContextAccessor.HttpContext?.User;
+    string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
+    
+    // Only allow Admin to list orders by status
+    if (RoleClaim != "Admin")
+    {
+        throw new Exception("You do not have permission to list orders by status");
+    }
+   // End check user role
+
+    // Fetch orders by status from repository
+    IEnumerable<ListOderResponseModel> response = await _oderRepository.ListOrderByStatus(status);
+
+    return response;
+}
+public async Task<List<object>> GetTotalOrders() // Trả vè số lượng order cho mỗi status
+{
+     // Check user role
+    var user = _httpContextAccessor.HttpContext?.User;
+    string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
+    // Only allow Admin to list orders by status
+    if (RoleClaim != "Admin")
+    {
+        throw new Exception("You do not have permission to list orders by status");
+    }
+    // Lấy danh sách các trạng thái và tổng số lượng từ Repository
+    var summaries = await _oderRepository.GetTotalOrdersGroupedByStatus();
+
+    // Tính tổng tất cả các trạng thái
+    int totalAll = summaries.Sum(s => s.Total);
+
+    // Thêm một đối tượng "ALL" vào danh sách
+    var result = new List<object>
+    {
+        new { Status = "ALL", Total = totalAll }
+    };
+
+    // Gộp đối tượng "ALL" với danh sách trạng thái khác
+    result.AddRange(summaries.Select(s => new { s.Status, s.Total }));
+
+    return result;
+}
+
+public async Task<bool> UpdateToNextOrderStatus(Guid orderId)
+{
+     // Check user role
+    // var user = _httpContextAccessor.HttpContext?.User;
+    // string RoleClaim = user?.FindFirst(ClaimTypes.Role)?.Value!;
+    // // Only allow Admin to list orders by status
+    // if (RoleClaim != "Admin")
+    // {
+    //     throw new Exception("You do not have permission to list orders by status");
+    // }
+
+    // Lấy thông tin đơn hàng
+    var order = await _oderRepository.GetOrderById(orderId);
+    if (order == null)
+        throw new Exception("Order not found");
+
+    // Cập nhật trạng thái tiếp theo
+    return await _oderRepository.UpdateToNextOrderStatus(orderId, order.status);
+}
+
     public async Task<string> CreateNewOder(Guid accountId,
         decimal total,
         string paymentMethod,
