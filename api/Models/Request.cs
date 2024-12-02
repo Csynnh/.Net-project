@@ -34,3 +34,8 @@ public class RetrieveChartDataRequest
 {
     public string ChartType { get; set; } = CHARTTYPE.DAILY;
 }
+
+public class GoogleRequest
+{
+    public string Token { get; set; }
+}

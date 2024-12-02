@@ -75,7 +75,7 @@ namespace service
       return user;
     }
 
-    public async Task<string> CreateAccount(string username, string password, string name, string email, string phone_number, string role)
+    public async Task<string> CreateAccount(string username, string password, string name, string email, string phone_number, string role="User")
     {
       try
       {

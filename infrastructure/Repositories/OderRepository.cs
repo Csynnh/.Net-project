@@ -10,7 +10,7 @@ public interface IOderRepository
 {
     Task<ListOderResponseModel> GetOrderById(Guid id);
     Task<IEnumerable<ListOderResponseModel>> ListOrderByAccountId(Guid accountId, string status = "");
-    Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId);
+    Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId, DateTime created_at);
     Task<IEnumerable<RetrieveChartDataResponse>> RetrieveChartData(DateTime startDate, DateTime endDate);
 }
 public class OderRepository : IOderRepository
@@ -68,20 +68,25 @@ public class OderRepository : IOderRepository
             WHERE od.id = @id;
         ";
         using var conn = _dataSource.OpenConnection();
-        var response = await conn.QuerySingleAsync<dynamic>(sql, new { id });
-        if (response.id == null)
+        var responses = await conn.QuerySingleAsync<dynamic>(sql, new { id });
+        if (responses.id == null)
         {
             throw new Exception("Order not found");
         }
-        var order = new ListOderResponseModel
+        var orders = new ListOderResponseModel
         {
-            id = response.id,
-            account_id = response.account_id,
-            created_at = response.created_at,
-            total = response.total,
-            status = response.status
+            id = responses.id,
+            account_id = responses.account_id,
+            created_at = responses.created_at,
+            total = responses.total,
+            status = responses.status,
+            paymend_method = JsonSerializer.Deserialize<object>(responses.payment_method.ToString()),
+            user_info = JsonSerializer.Deserialize<UserInformationRequest>(responses.info.ToString()!),
+            shipping_method = JsonSerializer.Deserialize<ShippingMethod>(responses.shipping_method.ToString()!),
+            list_products = responses.list_products != null ? JsonSerializer.Deserialize<List<object>>(responses.list_products.ToString()!) : new List<ProductModel>()
         };
-        return order;
+
+        return orders;
     }
 
     public async Task<IEnumerable<ListOderResponseModel>> ListOrderByAccountId(Guid accountId, string status = "")
@@ -231,15 +236,15 @@ public class OderRepository : IOderRepository
         return results.ToList();
     }
 
-    public async Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId)
+    public async Task<OderResponseModel> CreateOrder(Guid accountId, decimal total, Guid paymentMethodId, Guid shippingMethodId, Guid storedInformationId, DateTime created_at)
     {
         var sql = $@"
-            INSERT INTO DEV.ORDERS (account_id, total, payment_method_id, shipping_method_id, stored_information_id, status)
-            VALUES (@accountId, @total, @paymentMethodId, @shippingMethodId, @storedInformationId, 'CONFIRMING')
+            INSERT INTO DEV.ORDERS (account_id, total, payment_method_id, shipping_method_id, stored_information_id, status, created_at)
+            VALUES (@accountId, @total, @paymentMethodId, @shippingMethodId, @storedInformationId, 'CONFIRMING', @created_at)
             RETURNING id, account_id, total, payment_method_id, shipping_method_id, stored_information_id, status, created_at;
         ";
         using var conn = _dataSource.OpenConnection();
-        return await conn.QueryFirstAsync<OderResponseModel>(sql, new { accountId, total, paymentMethodId, shippingMethodId, storedInformationId });
+        return await conn.QueryFirstAsync<OderResponseModel>(sql, new { accountId, total, paymentMethodId, shippingMethodId, storedInformationId, created_at });
     }
 
     private string GetNextStatus(string currentStatus)

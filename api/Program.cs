@@ -43,6 +43,8 @@ builder.Services.AddSingleton<PaymentMethodRepository>();
 builder.Services.AddSingleton<PaymentMethodService>();
 builder.Services.AddSingleton<ShippingMethodRepository>();
 builder.Services.AddSingleton<ShippingMethodService>();
+builder.Services.AddSingleton<NotificationRepository>();
+builder.Services.AddSingleton<NotificationService>();
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<OtpService>();
 builder.Services.AddSingleton<OtpRepository>();

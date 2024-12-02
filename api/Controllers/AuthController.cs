@@ -1,9 +1,11 @@
+using Google.Apis.Auth;
 using api.TransferModels;
 using infrastructure.DataModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using service;
 using api.Filters;
+using api.Request;
 
 namespace api.Controllers
 {
@@ -13,11 +15,13 @@ namespace api.Controllers
   {
     private readonly UserService _userService;
     private readonly OtpService _otpService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(UserService userService, OtpService otpService)
+    public AuthController(UserService userService, OtpService otpService, ILogger<AuthController> logger)
     {
       _userService = userService;
       _otpService = otpService;
+      _logger = logger;
     }
 
     [HttpPost("login")]
@@ -42,18 +46,117 @@ namespace api.Controllers
     }
 
     [HttpPost]
+    [Route("google")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleRequest request)
+    {
+      if (request == null || string.IsNullOrWhiteSpace(request.Token))
+      {
+        return BadRequest(new { message = "Invalid request payload" });
+      }
+
+      var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+      if (string.IsNullOrWhiteSpace(googleClientId))
+      {
+        return StatusCode(500, new { message = "Server configuration error" });
+      }
+
+      try
+      {
+        var payload = await GoogleJsonWebSignature.ValidateAsync(request.Token, new GoogleJsonWebSignature.ValidationSettings
+        {
+          Audience = new[] { googleClientId }
+        });
+
+
+        var loginRequest = new LoginRequest
+        {
+          Username = payload.Email,
+          Password = request.Token
+        };
+
+        var token = await _userService.ValidateUserAsync(loginRequest.Username, loginRequest.Password);
+
+        if (token != null)
+        {
+          return Ok(new ResponseDto
+          {
+            MessageToClient = "Successfully logged in!",
+            ResponseData = token
+          });
+        }
+
+        return Unauthorized(new ResponseDto
+        {
+          MessageToClient = "You are not currently registered with this service",
+          ResponseData = null
+        });
+      }
+      catch (Exception ex)
+      {
+        return StatusCode(500, new { message = "An unexpected error occurred", error = ex.Message });
+      }
+    }
+
+    [HttpPost]
+    [Route("google/register")]
+    public async Task<IActionResult> GoogleRegister([FromBody] GoogleRequest request)
+    {
+      if (request == null || string.IsNullOrWhiteSpace(request.Token))
+      {
+        return BadRequest(new { message = "Invalid request payload" });
+      }
+
+      var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+      if (string.IsNullOrWhiteSpace(googleClientId))
+      {
+        return StatusCode(500, new { message = "Server configuration error" });
+      }
+
+      try
+      {
+        var payload = await GoogleJsonWebSignature.ValidateAsync(request.Token, new GoogleJsonWebSignature.ValidationSettings
+        {
+          Audience = new[] { googleClientId }
+        });
+
+        var createAccountRequest = new CreateAccountRequestDto
+        {
+          username = payload.Email,
+          password = request.Token,
+          name = payload.Name,
+          email = payload.Email,
+          phone_number = "Not provided"
+        };
+
+        var responseData = await _userService.CreateAccount(createAccountRequest.username, createAccountRequest.password, createAccountRequest.name, createAccountRequest.email, createAccountRequest.phone_number);
+        var token = await _userService.ValidateUserAsync(createAccountRequest.username, createAccountRequest.password);
+
+        return Ok(new ResponseDto
+        {
+          MessageToClient = "Successfully created new account",
+          ResponseData = token
+        });
+      }
+      catch (Exception ex)
+      {
+        return StatusCode(500, new { message = "An unexpected error occurred", error = ex.Message });
+      }
+    }
+
+    [HttpPost]
     [ValidateModel]
     [Route("accounts")]
     public async Task<ResponseDto> CreateAccount([FromBody] CreateAccountRequestDto dto)
     {
       try
       {
-        var responseData = await _userService.CreateAccount(dto.username, dto.password, dto.name, dto.email, dto.phone_number, dto.role);
+        var responseData = await _userService.CreateAccount(dto.username, dto.password, dto.name, dto.email, dto.phone_number);
         HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+        LoginResponse? token = await _userService.ValidateUserAsync(dto.username, dto.password);
         return new ResponseDto()
         {
           MessageToClient = "Successfully created new account",
-          ResponseData = responseData
+          ResponseData = token
         };
       }
       catch (Exception ex)
