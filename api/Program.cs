@@ -43,11 +43,14 @@ builder.Services.AddSingleton<PaymentMethodRepository>();
 builder.Services.AddSingleton<PaymentMethodService>();
 builder.Services.AddSingleton<ShippingMethodRepository>();
 builder.Services.AddSingleton<ShippingMethodService>();
+builder.Services.AddSingleton<NotificationRepository>();
+builder.Services.AddSingleton<NotificationService>();
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<OtpService>();
 builder.Services.AddSingleton<OtpRepository>();
 builder.Services.AddSingleton<MigrationRunner>();
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -124,6 +127,9 @@ if (args.Contains("--migrate-db"))
 
     logger.LogInformation("Database migration completed.");
 }
+
+// Add SignalR to the middleware pipeline.
+app.MapHub<NotificationHub>("/notificationHub");
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

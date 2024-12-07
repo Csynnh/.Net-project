@@ -12,6 +12,7 @@ public class OderController : ControllerBase
     private readonly ILogger<OderController> _logger;
     private readonly OderService _oderService;
 
+
     public OderController(ILogger<OderController> logger, OderService oderService)
     {
         _logger = logger;
@@ -20,7 +21,7 @@ public class OderController : ControllerBase
 
     [Authorize(Roles = "User,Admin")]
     [HttpGet]
-    [Route("/api/oder/{account_id}")]
+    [Route("/api/orders/account/{account_id}")]
     public async Task<ResponseDto> Get([FromRoute] Guid account_id, [FromQuery] string status)
     {
         HttpContext.Response.StatusCode = 200;
@@ -30,9 +31,10 @@ public class OderController : ControllerBase
             ResponseData = await _oderService.ListOderByAccountId(account_id, status)
         };
     }
+
     [Authorize(Roles = "User,Admin")]
     [HttpGet]
-    [Route("/api/oder/status/{status}")]
+    [Route("/api/orders/status/{status}")]
     public async Task<ResponseDto> GetWithStatus([FromRoute] string status)
     {
         HttpContext.Response.StatusCode = 200;
@@ -42,8 +44,22 @@ public class OderController : ControllerBase
             ResponseData = await _oderService.ListOrderByStatus(status)
         };
     }
+
     [Authorize(Roles = "User,Admin")]
-    [HttpGet("orders/total-grouped-by-status")]
+    [HttpGet]
+    [Route("/api/orders/account/{accountId}/status/{status}")]
+    public async Task<ResponseDto> ListOrderStatusByAccountId([FromRoute] string status, [FromRoute] Guid accountId)
+    {
+        HttpContext.Response.StatusCode = 200;
+        return new ResponseDto()
+        {
+            MessageToClient = "Successfully fetched",
+            ResponseData = await _oderService.ListOrderStatusByAccountId(accountId, status)
+        };
+    }
+
+    [Authorize(Roles = "User,Admin")]
+    [HttpGet("/api/orders/total-grouped-by-status")]
     public async Task<IActionResult> GetTotalOrders()
     {
         try
@@ -61,40 +77,41 @@ public class OderController : ControllerBase
     [Authorize(Roles = "User,Admin")]
     [HttpPost]
     [ValidateModel]
-    [Route("/api/oder")]
-    // [TypeFilter(typeof(OderFilter))]
+    [Route("/api/orders")]
     public async Task<ResponseDto> Post([FromBody] CreateOderRequest dto)
     {
         try
         {
             HttpContext.Response.StatusCode = StatusCodes.Status201Created;
-            return new ResponseDto()
-            {
-                MessageToClient = "Successfully created an oder",
-                ResponseData = await _oderService.CreateNewOder(
+            var response = await _oderService.CreateNewOder(
                     accountId: dto.account_id,
                     total: dto.price,
                     paymentMethod: dto.paymentMethod,
                     shippingMethod: dto.shippingMethod,
                     userInfo: dto.userInfo,
                     products: dto.products
-                )
+                );
+            var results = new ResponseDto()
+            {
+                MessageToClient = "Successfully created an oder",
+                ResponseData = response
             };
+
+            return results;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while creating an oder");
             HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             return new ResponseDto()
             {
-                MessageToClient = "An error occurred while creating the oder",
+                MessageToClient = $"An error occurred while creating the oder {ex.Message}",
                 ResponseData = null
             };
         }
     }
 
     // [Authorize(Roles = "User,Admin")]
-    [HttpPut("/api/oder/next-status/{id}")]
+    [HttpPut("/api/orders/next-status/{id}")]
     public async Task<IActionResult> UpdateToNextOrderStatus([FromRoute] Guid id)
     {
         var result = await _oderService.UpdateToNextOrderStatus(id);
@@ -105,7 +122,7 @@ public class OderController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    [Route("/api/oder/retrieve-chart-data")]
+    [Route("/api/orders/retrieve-chart-data")]
     public async Task<ResponseDto> RetrieveChartData([FromBody] RetrieveChartDataRequest dto)
     {
         try
@@ -124,6 +141,32 @@ public class OderController : ControllerBase
             return new ResponseDto()
             {
                 MessageToClient = "An error occurred while Retrieving Chart Data",
+                ResponseData = null
+            };
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    [Route("/api/orders/{id}")]
+    public async Task<ResponseDto> Get([FromRoute] Guid id)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = 200;
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully fetched",
+                ResponseData = await _oderService.GetOrderById(id)
+            };
+        }
+        catch (System.Exception)
+        {
+
+            HttpContext.Response.StatusCode = 404;
+            return new ResponseDto()
+            {
+                MessageToClient = "Oder not found",
                 ResponseData = null
             };
         }
