@@ -13,20 +13,20 @@ public class NotificationController : ControllerBase
         _notificationService = notificationService;
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User, Admin")]
     [HttpGet]
     [Route("/api/notifications")]
-    public async Task<ResponseDto> ListNotification()
+    public async Task<ResponseDto> ListNotification([FromQuery] string type, [FromQuery] Guid accountId)
     {
         HttpContext.Response.StatusCode = 200;
         return new ResponseDto()
         {
             MessageToClient = "Successfully fetched",
-            ResponseData = await _notificationService.ListNotification()
+            ResponseData = await _notificationService.ListNotification(type, accountId)
         };
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User, Admin")]
     [HttpPut]
     [Route("/api/notifications/{id}")]
     public async Task<ResponseDto> MarkNotificationAsRead(Guid id)

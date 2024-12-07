@@ -245,7 +245,8 @@ public class OderService : IOderService
         Guid notificationId = await _notificationRepository.InsertNotification(new Notification
         {
             content = JsonConvert.SerializeObject(content),
-            created_at = oder.created_at
+            created_at = oder.created_at,
+            type = "ODER_NOTIFICATION"
         });
 
         await _hubContext.Clients.All.SendAsync("ReceiveOrderNotification", new NotificationResponseModel

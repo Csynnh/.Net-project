@@ -5,6 +5,8 @@ public class Notification
     public Guid id { get; set; }
     public string content { get; set; }
     public DateTime created_at { get; set; }
+    public string? type { get; set; }
+    public Guid? account_id { get; set; }
 }
 
 public class NotificationQueryResponse

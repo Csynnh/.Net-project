@@ -8,7 +8,7 @@ namespace infrastructure.Repositories;
 public interface INotificationRepository
 {
     Task<Guid> InsertNotification(Notification notification);
-    Task<IEnumerable<NotificationQueryResponse>> ListNotification();
+    Task<IEnumerable<NotificationQueryResponse>> ListNotification(string? type, Guid? accountId);
     Task MarkNotificationAsRead(Guid id);
 }
 
@@ -26,8 +26,8 @@ public class NotificationRepository : INotificationRepository
     public async Task<Guid> InsertNotification(Notification notification)
     {
         var sql = $@"
-            INSERT INTO DEV.NOTIFICATIONS (content, created_at)
-            VALUES (@content::json, @created_at)
+            INSERT INTO DEV.NOTIFICATIONS (content, created_at, type, account_id)
+            VALUES (@content::json, @created_at, @type, @account_id)
             RETURNING id
         ";
         using var conn = _dataSource.OpenConnection();
@@ -35,14 +35,20 @@ public class NotificationRepository : INotificationRepository
         return response;
     }
 
-    public async Task<IEnumerable<NotificationQueryResponse>> ListNotification()
+    public async Task<IEnumerable<NotificationQueryResponse>> ListNotification(string? type = "ODER_NOTIFICATION", Guid? accountId = null)
     {
-        var sql = $@"
+        var sql = @"
             SELECT * FROM DEV.NOTIFICATIONS
-            ORDER BY created_at DESC
+            WHERE type = @type or type is null
         ";
+        if (accountId != Guid.Empty)
+        {
+            sql += $" AND account_id = '{accountId}'";
+        }
+        sql += " ORDER BY created_at DESC";
+
         using var conn = _dataSource.OpenConnection();
-        var response = await conn.QueryAsync<NotificationQueryResponse>(sql);
+        var response = await conn.QueryAsync<NotificationQueryResponse>(sql, new { type });
         return response;
     }
 
