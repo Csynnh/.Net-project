@@ -49,6 +49,8 @@ builder.Services.AddSingleton<NotificationService>();
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<OtpService>();
 builder.Services.AddSingleton<OtpRepository>();
+builder.Services.AddSingleton<EmployeeService>();
+builder.Services.AddSingleton<EmployeeRepository>();
 builder.Services.AddSingleton<MigrationRunner>();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();

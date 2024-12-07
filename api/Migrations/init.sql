@@ -132,3 +132,13 @@ CREATE TABLE IF NOT EXISTS DEV.NOTIFICATIONS (
     type VARCHAR(255) NOT NULL,
     is_read BOOLEAN DEFAULT FALSE
 );
+CREATE TABLE IF NOT EXISTS DEV.EMPLOYEE(
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    position VARCHAR(50) NOT NULL,
+    man_hours int,
+    hired_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    email VARCHAR(255),
+    phone VARCHAR(255),
+    avatar text
+);
