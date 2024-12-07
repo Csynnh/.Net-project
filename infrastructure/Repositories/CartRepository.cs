@@ -13,18 +13,19 @@ public class CartRepository
     }
 
     //Create Cart
-    public void CreateCart(Guid accountId, Guid variant_productId, int quantity)
+    public Guid CreateCart(Guid accountId, Guid variant_productId, int quantity)
     {
         var sql = $@"
         INSERT INTO dev.carts (account_id, product_variant_id, quantity)
         VALUES (@accountId, @variant_productId, @quantity)
+        RETURNING id;
         ";
 
         try
         {
-            using (var conn = _dataSource.OpenConnection()) // Open connection to the database
+            using (var conn = _dataSource.OpenConnection())
             {
-                conn.Execute(sql, new { accountId, variant_productId, quantity });
+                return conn.QuerySingle<Guid>(sql, new { accountId, variant_productId, quantity });
             }
         }
         catch (Exception ex) // Catch other general exceptions

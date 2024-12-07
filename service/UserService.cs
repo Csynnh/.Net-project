@@ -148,7 +148,7 @@ namespace service
 
     public TokenModel GenerateJwtToken(User user, string password)
     {
-      Console.WriteLine($"GenerateJwtToken::Generating JWT token {user.Username}");
+      Console.WriteLine($"GenerateJwtToken::Generating JWT token {user.Username} - {user.Id.ToString()}");
       var claims = new[]
       {
           new Claim(JwtRegisteredClaimNames.Sub, user.Username),
@@ -156,6 +156,7 @@ namespace service
           new Claim(ClaimTypes.Name, user.Username),
           new Claim(ClaimTypes.Role, user.Role),
           new Claim(ClaimTypes.Hash, password),
+          new Claim(ClaimTypes.Sid, user.Id.ToString())
       };
       string jwtKey = _configuration["Jwt:Key"] ?? throw new Exception("GenerateJwtToken::Jwt:Key is not set in the configuration");
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 public interface INotificationService
 {
-    Task<IEnumerable<NotificationResponseModel>> ListNotification();
+    Task<IEnumerable<NotificationResponseModel>> ListNotification(string? type, Guid? accountId);
     Task<bool> MarkNotificationAsRead(Guid id);
 }
 
@@ -18,9 +18,9 @@ public class NotificationService : INotificationService
         _notificationRepository = notificationRepository;
     }
 
-    public async Task<IEnumerable<NotificationResponseModel>> ListNotification()
+    public async Task<IEnumerable<NotificationResponseModel>> ListNotification(string? type, Guid? accountId)
     {
-        var responses = await _notificationRepository.ListNotification();
+        var responses = await _notificationRepository.ListNotification(type, accountId);
         IEnumerable<NotificationResponseModel> notificationResponseModels = responses.Select(response => new NotificationResponseModel
         {
             id = response.id,
