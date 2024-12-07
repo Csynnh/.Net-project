@@ -42,7 +42,7 @@ public class ListOderResponseModel
 
 public class ProductCheckout
 {
-    public string id { get; set; }
+    public Guid id { get; set; }
     public List<Variant> variants { get; set; }
 }
 

@@ -2,6 +2,7 @@ using infrastructure.DataModels;
 using infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 
@@ -95,6 +96,15 @@ public class OderService : IOderService
 
         return response;
     }
+
+    public async Task<IEnumerable<ListOderResponseModel>> ListOrderStatusByAccountId(Guid accountId, string status)
+    {
+        // Fetch orders by status from repository
+        IEnumerable<ListOderResponseModel> response = await _oderRepository.ListOrderByStatus(status, accountId);
+
+        return response;
+    }
+
     public async Task<List<object>> GetTotalOrders() // Trả vè số lượng order cho mỗi status
     {
         // Check user role
@@ -153,16 +163,42 @@ public class OderService : IOderService
     {
         try
         {
-            Authorization authorization = new Authorization(_httpContextAccessor, _userRepository);
-            await authorization.ValidateUser(accountId);
-
+            // Authorization authorization = new Authorization(_httpContextAccessor, _userRepository);
+            // await authorization.ValidateUser(accountId);
             PaymentMethod paymentMethods = await _paymentMethodRepository.GetPaymentMethodByName(paymentMethod.ToString()!);
+            if (paymentMethods == null)
+            {
+                paymentMethods = await _paymentMethodRepository.AddPaymentMethod(
+                    new PaymentMethod
+                    {
+                        account_id = accountId,
+                        payment_method = paymentMethod
+                    }
+                );
+            }
             Guid paymentMethodId = paymentMethods.id;
 
             ShippingMethod shippingMethods = await _shippingMethodRepository.GetShippingMethodByName(shippingMethod.ToString()!);
+            if (shippingMethods == null)
+            {
+                shippingMethods = await _shippingMethodRepository.CreateShippingMethod(
+                    new ShippingMethodRequest
+                    {
+                        shipping_name = shippingMethod,
+                        shipping_cost = 0
+                    }
+                );
+            }
             Guid shippingMethodId = shippingMethods.id;
-
-            Guid userInfoId = _userStoredInformationRepository.GetUserStoredInformationByValues(accountId: accountId, address: userInfo.address, phone: userInfo.phone, name: userInfo.name).id;
+            dynamic userInfoResponse = _userStoredInformationRepository.GetUserStoredInformationByValues(accountId: accountId, address: userInfo.address, phone: userInfo.phone, name: userInfo.name);
+            if (userInfoResponse == null)
+            {
+                userInfoResponse = _userStoredInformationRepository.CreateUserStoredInformation(
+                    accountId,
+                    JsonConvert.SerializeObject(userInfo)
+                );
+            }
+            Guid userInfoId = userInfoResponse.id;
             DateTime created_at = DateTime.UtcNow;
             var oder = await _oderRepository.CreateOrder(accountId, total, paymentMethodId, shippingMethodId, userInfoId, created_at);
 
@@ -192,7 +228,8 @@ public class OderService : IOderService
         catch (Exception ex)
         {
             // Log the exception (logging mechanism not shown here)
-            throw new Exception("An error occurred while creating the order", ex);
+            System.Console.WriteLine($"Error occurred while creating an oder: {ex.Message}");
+            throw new Exception($"{ex.Message}");
         }
     }
 

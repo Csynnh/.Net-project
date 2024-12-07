@@ -153,7 +153,7 @@ public class OderRepository : IOderRepository
 
         return orders;
     }
-    public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string status)
+    public async Task<IEnumerable<ListOderResponseModel>> ListOrderByStatus(string status, Guid? accountId = null)
     {
         // Xây dựng câu lệnh SQL
         var sql = $@"
@@ -198,12 +198,12 @@ public class OderRepository : IOderRepository
         LEFT JOIN DEV.PAYMENTMETHODS pm ON pm.id = od.payment_method_id
         LEFT JOIN DEV.SHIPPINGMETHODS sm ON sm.id = od.shipping_method_id
         LEFT JOIN DEV.USERSTOREDINFOMATION usi ON usi.id = od.stored_information_id
-        WHERE (@status = 'ALL' OR od.status = @status)  -- Điều kiện lọc linh hoạt
+        WHERE (@status = 'ALL' OR od.status = @status) AND (@accountId IS NULL OR od.account_id = @accountId)
         ORDER BY od.created_at DESC;
     ";
 
         using var conn = _dataSource.OpenConnection();
-        var responses = await conn.QueryAsync<dynamic>(sql, new { status });
+        var responses = await conn.QueryAsync<dynamic>(sql, new { status, accountId });
 
         // Ánh xạ dữ liệu trả về từ query vào các đối tượng của ứng dụng
         var orders = responses.Select(x => new ListOderResponseModel
