@@ -52,7 +52,9 @@ public class EmployeeController : ControllerBase
     [Authorize(Roles = "Admin")]
     [HttpGet]
     [Route("/api/employees")]
-    public ResponseDto GetListEmployees(
+    public async Task<ResponseDto> GetListEmployees(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 6,
         [FromQuery] string? hiredDate = null,
         [FromQuery] int? sumManHoursFrom = 0,
         [FromQuery] int? sumManHoursTo = 0
@@ -61,8 +63,8 @@ public class EmployeeController : ControllerBase
         HttpContext.Response.StatusCode = 200;
 
         try{
-            var employees = _employeeService.GetListEmployees(hiredDate, sumManHoursFrom, sumManHoursTo);
-            System.Console.WriteLine(employees.Count());
+            var employees = await _employeeService.GetListEmployees(pageNumber, pageSize, hiredDate, sumManHoursFrom, sumManHoursTo);
+
             return new ResponseDto()
                 {
                     MessageToClient = "Successfully fetched",
@@ -80,6 +82,58 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    [Route("/api/employee/{id}")]
+    public ResponseDto GetEmployeeById([FromRoute] Guid id)
+    {
+        HttpContext.Response.StatusCode = 200;
+
+        try
+        {
+            var employee = _employeeService.GetEmployeeById(id);
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully fetched",
+                ResponseData = employee
+            };
+        }
+        catch (Exception ex) // Catch other general exceptions
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Error",
+                ResponseData = ex.Message
+            };
+        }
+    }
+
+    //Update a Employee with optional parameters
+    [Authorize(Roles = "Admin")]
+    [HttpPut]
+    [Route("/api/employee/{id}")]
+    public ResponseDto UpdateEmployee([FromRoute] Guid id, [FromBody] Employee dto)
+    {
+        HttpContext.Response.StatusCode = 200;
+
+        try
+        {
+            _employeeService.UpdateEmployee(id, dto.name, dto.position, dto.man_hours, dto.hired_date, dto.email, dto.phone);
+              return new ResponseDto()
+            {
+                MessageToClient = "Successfully updating employee",
+                ResponseData = "Successfully updating employee"
+            };
+        }
+        catch (Exception ex) // Catch other general exceptions
+        {
+            return new ResponseDto()
+            {
+                MessageToClient = "Error",
+                ResponseData = ex.Message
+            };
+        }
+    }
     //Delete a Employee
     [Authorize(Roles = "Admin")]
     [HttpDelete]
