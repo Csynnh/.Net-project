@@ -13,5 +13,14 @@ public class Employee
 
 public class EmployeeResponse:Employee
 {
-    public Guid id { get; set; }  // Primary Key, Foreign Key, liên kết tới bảng Hóa đơn
+    public Guid id { get; set; }
+   
+}
+
+public class EmployeeList
+{
+   
+    public List<EmployeeResponse> employeeList{get; set; }
+    public int totalCount { get; set; }  // Primary Key, Foreign Key, liên kết tới bảng Hóa đơn
+
 }
