@@ -31,4 +31,5 @@ public class NotificationContent
     public Guid Id { get; set; }
     public string message { get; set; }
     public DateTime createdAt { get; set; }
+    public string? phone {get; set;}
 }
