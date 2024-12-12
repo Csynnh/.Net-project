@@ -166,7 +166,7 @@ namespace service
           issuer: _configuration["Jwt:Issuer"],
           audience: _configuration["Jwt:Audience"],
           claims: claims,
-          expires: DateTime.Now.AddMinutes(30), // Token expiration time
+          expires: DateTime.Now.AddDays(1), // Token expiration time
           signingCredentials: creds);
 
       return new TokenModel
