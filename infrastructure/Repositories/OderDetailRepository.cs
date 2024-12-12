@@ -10,7 +10,7 @@ public interface IOderDetailRepository
     Task<OderDetailResponse> CreateOderDetail(OderDetailRequest oderDetail);
 }
 
-public class OderDetailRepository: IOderDetailRepository
+public class OderDetailRepository : IOderDetailRepository
 {
     private NpgsqlDataSource _dataSource;
 
@@ -28,7 +28,7 @@ public class OderDetailRepository: IOderDetailRepository
             UPDATE DEV.PRODUCTVARIANTS
             SET Inventory = Inventory - odt.Quantity
             FROM DEV.ORDERDETAILS odt
-            WHERE odt.product_variant_id = DEV.PRODUCTVARIANTS.id
+            WHERE odt.product_variant_id = @Id
         ";
 
         var sql = @"
@@ -36,8 +36,9 @@ public class OderDetailRepository: IOderDetailRepository
             VALUES (@OrderId, @ProductVariantId, @Quantity, @Price)
             RETURNING id, order_id, product_variant_id, quantity, price
         ";
-        await conn.ExecuteAsync(updateInventorySql);
-        return await conn.QuerySingleAsync<OderDetailResponse>(sql, new {
+        await conn.ExecuteAsync(updateInventorySql, new { Id = oderDetail.product_variant_id });
+        return await conn.QuerySingleAsync<OderDetailResponse>(sql, new
+        {
             OrderId = oderDetail.order_id,
             ProductVariantId = oderDetail.product_variant_id,
             Quantity = oderDetail.quantity,
