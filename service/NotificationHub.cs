@@ -1,8 +1,8 @@
 namespace service;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-
 using Microsoft.AspNetCore.SignalR;
+
 
 public class NotificationHub : Hub
 {
