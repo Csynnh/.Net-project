@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using Amazon.Extensions.NETCore.Setup;
 using Microsoft.AspNetCore.SignalR;
-using Amazon;
 
 var builder = WebApplication.CreateBuilder(args);
 
