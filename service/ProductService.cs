@@ -145,7 +145,7 @@ public class ProductService : IProductService
         try
         {
 
-            var existingProduct = await _repository.GetProductByIdAsync(id);
+            var existingProduct = await _repository.GetProductVariantByIdAsync(id);
             if (existingProduct == null)
             {
                 throw new InvalidOperationException($"Product with id: '{id}' does not exist");
