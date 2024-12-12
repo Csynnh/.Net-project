@@ -11,7 +11,8 @@ public interface IProductRepository
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status);
     Task<ProductModelResponse?> GetProductByNameColorSizeAsync(string name, string color, string size);
     Task<bool> UpdateProductAsync(Guid id, Guid VariantId, ProductModel product);
-    Task DeleteProductAsync(Guid VariantId);
+    Task DeleteProductAsync(Guid id);
+    Task DeleteProductVariantAsync(Guid VariantId);
 }
 
 
@@ -447,6 +448,31 @@ namespace infrastructure.Repositories
 
             cmd.Parameters.AddWithValue("Id", Id.ToString());
             await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task DeleteProductVariantAsync(Guid VariantId)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            await using var cmd = new NpgsqlCommand(@"
+            DELETE FROM DEV.ProductVariants
+            WHERE Id = @VariantId::uuid;
+            ", conn);
+
+            cmd.Parameters.AddWithValue("VariantId", VariantId.ToString());
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<bool> IsLastVariantAsync(Guid Id)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var count = await conn.ExecuteScalarAsync<int>(@"
+            SELECT COUNT(*)
+            FROM DEV.ProductVariants pv
+            LEFT JOIN DEV.Products p ON p.Id = pv.product_id
+            WHERE p.Id = @Id::uuid;
+            ", new { Id = Id });
+
+            return count == 1;
         }
     }
 }

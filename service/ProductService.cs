@@ -17,6 +17,7 @@ public interface IProductService
     Task<string> UpdateProductAsync(Guid id, UpdateProductModel ProductRequest);
     Task<string> UploadImageAsync(IFormFile image);
     Task DeleteProductAsync(Guid id);
+    Task DeleteProductVariantAsync(Guid id);
 }
 
 
@@ -207,6 +208,30 @@ public class ProductService : IProductService
         catch (Exception ex)
         {
             throw new InvalidOperationException($"An error occurred while deleting the product: {ex.Message}");
+        }
+    }
+
+    public async Task DeleteProductVariantAsync(Guid id)
+    {
+        try
+        {
+            var existingProduct = await _repository.GetProductVariantByIdAsync(id);
+            if (existingProduct == null)
+            {
+                throw new InvalidOperationException($"Product variant with id: '{id}' does not exist");
+            }
+
+            var isLastVariant = await _repository.IsLastVariantAsync(existingProduct.Id);
+            if (isLastVariant)
+            {
+                await _repository.DeleteProductAsync(existingProduct.Id);
+                return;
+            }
+            await _repository.DeleteProductVariantAsync(id);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while deleting the product variant: {ex.Message}");
         }
     }
 }
