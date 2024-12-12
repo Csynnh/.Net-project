@@ -4,6 +4,7 @@ using api.TransferModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using service;
+using Newtonsoft.Json;
 
 namespace library.Controllers;
 
@@ -76,13 +77,14 @@ public class OderController : ControllerBase
 
     [Authorize(Roles = "User,Admin")]
     [HttpPost]
-    [ValidateModel]
     [Route("/api/orders")]
     public async Task<ResponseDto> Post([FromBody] CreateOderRequest dto)
     {
         try
         {
             HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+            _logger.LogInformation($"Creating order with data: {dto.account_id}");
+
             var response = await _oderService.CreateNewOder(
                     accountId: dto.account_id,
                     total: dto.price,

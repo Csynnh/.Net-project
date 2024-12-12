@@ -70,11 +70,19 @@ public class CartRepository
     // Update Cart
     public void UpdateCart(Guid cartId, int quantity)
     {
-        var sql = $@"
-        UPDATE DEV.carts 
-        SET quantity = @quantity
-        WHERE id = @cartId
-        ";
+        string sql;
+        if (quantity <= 0)
+        {
+            sql = @"DELETE FROM DEV.carts WHERE id = @cartId;";
+        }
+        else
+        {
+            sql = @"
+            UPDATE DEV.carts
+            SET quantity = @quantity
+            WHERE id = @cartId
+            ";
+        }
         try
         {
             using (var conn = _dataSource.OpenConnection())

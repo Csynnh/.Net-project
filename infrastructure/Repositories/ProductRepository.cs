@@ -11,6 +11,8 @@ public interface IProductRepository
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status);
     Task<ProductModelResponse?> GetProductByNameColorSizeAsync(string name, string color, string size);
     Task<bool> UpdateProductAsync(Guid id, Guid VariantId, ProductModel product);
+    Task DeleteProductAsync(Guid id);
+    Task DeleteProductVariantAsync(Guid VariantId);
 }
 
 
@@ -132,8 +134,9 @@ namespace infrastructure.Repositories
             {
                 countQuery += " AND p.Price <= @MaxPrice";
             }
-
-            var totalItems = await conn.ExecuteScalarAsync<int>(countQuery, new
+            countQuery += " GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.type";
+            var countSql = $"SELECT COUNT(*) FROM ({countQuery})";
+            var totalItems = await conn.ExecuteScalarAsync<int>(countSql, new
             {
                 Name = name.ToUpper(),
                 Size = size,
@@ -367,12 +370,12 @@ namespace infrastructure.Repositories
             await using var cmd = new NpgsqlCommand(@"
             -- Update the product
             UPDATE DEV.Products
-            SET name = @Name, description = @Description, price = @Price, inventory = @Inventory, details = @Details::json
+            SET name = @Name, description = @Description, price = @Price, inventory = @Inventory, details = @Details::json, type_id = (SELECT id FROM DEV.Types WHERE type = @Type)
             WHERE id = @Id::uuid;
 
             -- Update the product variant
             UPDATE DEV.ProductVariants
-            SET images = @Images::json, inventory = @Inventory
+            SET images = @Images::json, inventory = @Inventory, size_id = (SELECT id FROM DEV.Sizes WHERE size = @Size), color_id = (SELECT id FROM DEV.Colors WHERE color = @Color)
             WHERE Id = @VariantId::uuid;
             ", conn);
 
@@ -386,6 +389,7 @@ namespace infrastructure.Repositories
             cmd.Parameters.AddWithValue("Size", product.Size);
             cmd.Parameters.AddWithValue("Color", product.Color);
             cmd.Parameters.AddWithValue("Images", product.Images);
+            cmd.Parameters.AddWithValue("Type", product.Type);
 
             await cmd.ExecuteNonQueryAsync();
 
@@ -434,5 +438,41 @@ namespace infrastructure.Repositories
             }
         }
 
+        public async Task DeleteProductAsync(Guid Id)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            await using var cmd = new NpgsqlCommand(@"
+            DELETE FROM DEV.Products
+            WHERE Id = @Id::uuid;
+            ", conn);
+
+            cmd.Parameters.AddWithValue("Id", Id.ToString());
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task DeleteProductVariantAsync(Guid VariantId)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            await using var cmd = new NpgsqlCommand(@"
+            DELETE FROM DEV.ProductVariants
+            WHERE Id = @VariantId::uuid;
+            ", conn);
+
+            cmd.Parameters.AddWithValue("VariantId", VariantId.ToString());
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<bool> IsLastVariantAsync(Guid Id)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var count = await conn.ExecuteScalarAsync<int>(@"
+            SELECT COUNT(*)
+            FROM DEV.ProductVariants pv
+            LEFT JOIN DEV.Products p ON p.Id = pv.product_id
+            WHERE p.Id = @Id::uuid;
+            ", new { Id = Id });
+
+            return count == 1;
+        }
     }
 }
