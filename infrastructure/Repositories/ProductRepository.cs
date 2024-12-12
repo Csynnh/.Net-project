@@ -9,7 +9,8 @@ public interface IProductRepository
     Task<infrastructure.DataModels.PagedResponse<ProductModelResponse>> ListProductByTypeNameAsync(string name, int pageNumber, int pageSize, string? size, decimal? minPrice, decimal? maxPrice);
     Task<IEnumerable<ListProductByTypeResponse>> ListProductByTypeAsync();
     Task<IEnumerable<ListProductByOderStatusResponse>> ListProductByOderStatusAsync(Guid accountId, string status);
-    Task<bool> IsProductExistAsync(string name, string color, string size);
+    Task<ProductModelResponse?> GetProductByNameColorSizeAsync(string name, string color, string size);
+    Task<bool> UpdateProductAsync(Guid id, Guid VariantId, ProductModel product);
 }
 
 
@@ -27,8 +28,8 @@ namespace infrastructure.Repositories
         public async Task<ProductModelResponse> GetProductByIdAsync(Guid id)
         {
             await using var conn = await _dataSource.OpenConnectionAsync();
-            var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse>(@"
-            SELECT p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+            var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse?>(@"
+            SELECT p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
                 jsonb_agg(jsonb_build_object(
                     'Id', pv.Id,
                     'Images', pv.Images::json,
@@ -37,13 +38,17 @@ namespace infrastructure.Repositories
                     'Color', c.Color
                 )) AS Variants,
                 t.Type
-            FROM DEV.Products p
-            JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+            FROM DEV.ProductVariants pv
+            JOIN DEV.Products p ON p.Id = pv.Product_Id
             JOIN DEV.Sizes s ON pv.Size_Id = s.Id
             JOIN DEV.Colors c ON pv.Color_Id = c.Id
             JOIN DEV.Types t ON p.Type_Id = t.Id
-            WHERE p.Id = @Id
-            GROUP BY p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { Id = id });
+            WHERE pv.Id = @Id
+            GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { Id = id });
+            if (product == null)
+            {
+                return null;
+            }
             var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
             var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
             product.Variants = productVariant;
@@ -109,6 +114,7 @@ namespace infrastructure.Repositories
             var query = @"
     SELECT p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
         jsonb_agg(jsonb_build_object(
+            'Id', pv.Id,
             'Images', pv.Images::json,
             'Inventory', pv.Inventory,
             'Size', s.Size,
@@ -323,85 +329,76 @@ namespace infrastructure.Repositories
             await cmd.ExecuteNonQueryAsync();
         }
 
-
-        /*
-        SELECT
-            o.id AS order_id,
-            o.status AS order_status,
-            o.created_at AS order_date,
-            od.quantity AS quantity,
-            od.price AS unit_price,
-            od.quantity * od.price AS total_price,
-            p.id AS product_id,
-            p.name AS product_name,
-            p.description AS product_description,
-            p.price AS product_price,
-            pv.size_id AS size_id,
-            s.size AS size,
-            pv.color_id AS color_id,
-            c.color AS color,
-            pv.images AS images
-        FROM
-            DEV.ORDERS o
-        JOIN
-            DEV.ORDERDETAILS od ON o.id = od.order_id
-        JOIN
-            DEV.PRODUCTVARIANTS pv ON od.product_variant_id = pv.id
-        JOIN
-            DEV.PRODUCTS p ON pv.product_id = p.id
-        LEFT JOIN
-            DEV.SIZES s ON pv.size_id = s.id
-        LEFT JOIN
-            DEV.COLORS c ON pv.color_id = c.id
-        WHERE
-            o.account_id = :account_id
-            AND o.status = :status
-        ORDER BY
-            o.created_at DESC;
-        */
-        // public async 
-
-        public async Task<bool> IsProductExistAsync(string name, string color, string size)
+        public async Task<bool> UpdateProductAsync(Guid id, Guid VariantId, ProductModel product)
         {
-            // Define the SQL query to check for existing products with the specified criteria
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            await using var cmd = new NpgsqlCommand(@"
+            -- Update the product
+            UPDATE DEV.Products
+            SET name = @Name, description = @Description, price = @Price, inventory = @Inventory, details = @Details::json
+            WHERE id = @Id::uuid;
+
+            -- Update the product variant
+            UPDATE DEV.ProductVariants
+            SET images = @Images::json, inventory = @Inventory
+            WHERE Id = @VariantId::uuid;
+            ", conn);
+
+            cmd.Parameters.AddWithValue("Id", id.ToString());
+            cmd.Parameters.AddWithValue("VariantId", VariantId.ToString());
+            cmd.Parameters.AddWithValue("Name", product.Name);
+            cmd.Parameters.AddWithValue("Description", product.Description);
+            cmd.Parameters.AddWithValue("Price", product.Price);
+            cmd.Parameters.AddWithValue("Inventory", product.Inventory);
+            cmd.Parameters.AddWithValue("Details", product.Details);
+            cmd.Parameters.AddWithValue("Size", product.Size);
+            cmd.Parameters.AddWithValue("Color", product.Color);
+            cmd.Parameters.AddWithValue("Images", product.Images);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            return true;
+        }
+
+        public async Task<ProductModelResponse?> GetProductByNameColorSizeAsync(string name, string color, string size)
+        {
             const string sql = @"
-        SELECT COUNT(*)
-        FROM DEV.PRODUCTS p
-        JOIN DEV.PRODUCTVARIANTS pv ON p.id = pv.product_id
-        JOIN DEV.COLORS c ON pv.color_id = c.id
-        JOIN DEV.SIZES s ON pv.size_id = s.id
-        WHERE p.name = @Name AND c.color = @Color AND s.size = @Size";
+            SELECT p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+                        jsonb_agg(jsonb_build_object(
+                            'Id', pv.Id,
+                            'Images', pv.Images::json,
+                            'Inventory', pv.Inventory,
+                            'Size', s.Size,
+                            'Color', c.Color
+                        )) AS Variants,
+                        t.Type
+            FROM DEV.Products p
+            JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+            JOIN DEV.Colors c ON pv.Color_Id = c.Id
+            JOIN DEV.Types t ON p.Type_Id = t.Id
+            WHERE p.Name = @Name AND c.Color = @Color AND s.Size = @Size
+            GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type
+            LIMIT 1;";
 
             try
             {
-                using (var connection = _dataSource.CreateConnection())
+                await using var conn = await _dataSource.OpenConnectionAsync();
+                var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse>(sql, new { Name = name, Color = color.ToUpper(), Size = size.ToUpper() });
+                if (product != null)
                 {
-                    await connection.OpenAsync();
-
-                    using (var command = new NpgsqlCommand(sql, connection))
-                    {
-                        // Add parameters to prevent SQL injection
-                        command.Parameters.AddWithValue("@Name", name);
-                        command.Parameters.AddWithValue("@Color", color.ToUpper());
-                        command.Parameters.AddWithValue("@Size", size.ToUpper());
-
-                        // Execute the query and retrieve the count
-                        var count = await command.ExecuteScalarAsync();
-
-                        // Return true if at least one product exists, otherwise false
-                        if (count != null && count != DBNull.Value)
-                        {
-                            return Convert.ToInt32(count) > 0;
-                        }
-                        return false;
-                    }
+                    var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
+                    var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
+                    product.Variants = productVariant;
+                    product.Details = productDetails;
                 }
+
+                return product;
             }
             catch (Exception ex)
             {
-                // Log the exception and return null
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                return false;
+                return null;
             }
         }
 

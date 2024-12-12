@@ -39,7 +39,7 @@ public class NotificationRepository : INotificationRepository
     {
         var sql = @"
             SELECT * FROM DEV.NOTIFICATIONS
-            WHERE type = @type or type is null
+            WHERE type = @type
         ";
         if (accountId != Guid.Empty)
         {

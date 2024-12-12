@@ -6,11 +6,11 @@ public class ProductModel
 {
     public required string Name { get; set; }
     public required string Description { get; set; }
-    public string Size { get; set; }
-    public string Color { get; set; }
+    public string? Size { get; set; }
+    public string? Color { get; set; }
     public string Type { get; set; }
     public decimal Price { get; set; }
-    public int Inventory { get; set; }
+    public int? Inventory { get; set; }
     public required string Details { get; set; }
     public string Images { get; set; }
 }

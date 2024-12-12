@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using api.Filters;
 using api.TransferModels;
 using infrastructure.DataModels;
@@ -144,6 +145,61 @@ public class ProductController : ControllerBase
             return new ResponseDto()
             {
                 MessageToClient = "An error occurred while creating the product",
+                ResponseData = ex.Message
+            };
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut]
+    [ValidateModel]
+    [Route("/api/products/{id}")]
+    public async Task<ResponseDto> UpdateProduct([FromRoute] Guid id, [FromBody] UpdateProductModel dto)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = 200;
+            _logger.LogInformation($"Updating a product with id: {id}");
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully updated",
+                ResponseData = await _productService.UpdateProductAsync(id, dto)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            HttpContext.Response.StatusCode = 204;
+            return new ResponseDto()
+            {
+                MessageToClient = "An error occurred while updating the product",
+                ResponseData = ex.Message
+            };
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    [Route("/api/products/upload-image")]
+    public async Task<ResponseDto> UploadImage([FromForm] UploadImageRequest request)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = 200;
+            _logger.LogInformation("Uploading image");
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully uploaded",
+                ResponseData = await _productService.UploadImageAsync(request.Image)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            HttpContext.Response.StatusCode = 204;
+            return new ResponseDto()
+            {
+                MessageToClient = "An error occurred while uploading the image",
                 ResponseData = ex.Message
             };
         }

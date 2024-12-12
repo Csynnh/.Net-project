@@ -60,16 +60,40 @@ public class CreateProductModel
     public string ProductName { get; set; }
     public string ProductDescription { get; set; }
     public decimal Price { get; set; }
-    public string Size { get; set; }
+    public string? Size { get; set; }
     public string Type { get; set; }
-    public int Inventory { get; set; }
+    public int? Inventory { get; set; }
     public ProductDetails Details { get; set; }
     public ProductImages Images { get; set; }
-    public string Color { get; set; }
+    public string? Color { get; set; }
 }
 
 public class ProductImages
 {
     public IFormFile ImageThumbnail { get; set; }
     public List<IFormFile> AdditionalImages { get; set; }
+}
+
+public class UpdateProductModel
+{
+    public string ProductName { get; set; }
+    public string ProductDescription { get; set; }
+    public decimal Price { get; set; }
+    public string? Size { get; set; }
+    public string Type { get; set; }
+    public int? Inventory { get; set; }
+    public ProductDetails Details { get; set; }
+    public ProductImagesUrl Images { get; set; }
+    public string? Color { get; set; }
+}
+
+public class ProductImagesUrl
+{
+    public string ImageThumbnail { get; set; }
+    public List<string> AdditionalImages { get; set; }
+}
+
+
+public class UploadImageRequest {
+    public IFormFile Image { get; set; }
 }
