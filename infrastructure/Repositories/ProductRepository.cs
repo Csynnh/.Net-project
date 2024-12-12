@@ -25,7 +25,7 @@ namespace infrastructure.Repositories
             _dataSource = dataSource;
         }
 
-        public async Task<ProductModelResponse> GetProductByIdAsync(Guid id)
+        public async Task<ProductModelResponse> GetProductVariantByIdAsync(Guid id)
         {
             await using var conn = await _dataSource.OpenConnectionAsync();
             var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse?>(@"
@@ -44,6 +44,37 @@ namespace infrastructure.Repositories
             JOIN DEV.Colors c ON pv.Color_Id = c.Id
             JOIN DEV.Types t ON p.Type_Id = t.Id
             WHERE pv.Id = @Id
+            GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { Id = id });
+            if (product == null)
+            {
+                return null;
+            }
+            var productVariant = JsonSerializer.Deserialize<List<ProductVariant>>((string)product.Variants);
+            var productDetails = JsonSerializer.Deserialize<ProductDetails>((string)product.Details);
+            product.Variants = productVariant;
+            product.Details = productDetails;
+            return product;
+        }
+
+        public async Task<ProductModelResponse> GetProductByIdAsync(Guid id)
+        {
+            await using var conn = await _dataSource.OpenConnectionAsync();
+            var product = await conn.QueryFirstOrDefaultAsync<ProductModelResponse?>(@"
+            SELECT p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text AS Details,
+                jsonb_agg(jsonb_build_object(
+                    'Id', pv.Id,
+                    'Images', pv.Images::json,
+                    'Inventory', pv.Inventory,
+                    'Size', s.Size,
+                    'Color', c.Color
+                )) AS Variants,
+                t.Type
+            FROM DEV.Products p
+            JOIN DEV.ProductVariants pv ON p.Id = pv.Product_Id
+            JOIN DEV.Sizes s ON pv.Size_Id = s.Id
+            JOIN DEV.Colors c ON pv.Color_Id = c.Id
+            JOIN DEV.Types t ON p.Type_Id = t.Id
+            WHERE p.Id = @Id
             GROUP BY p.Id, p.Name, p.Description, p.Price, p.Inventory, p.Details::text, t.Type", new { Id = id });
             if (product == null)
             {
