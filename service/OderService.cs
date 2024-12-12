@@ -163,8 +163,6 @@ public class OderService : IOderService
     {
         try
         {
-            // Authorization authorization = new Authorization(_httpContextAccessor, _userRepository);
-            // await authorization.ValidateUser(accountId);
             PaymentMethod paymentMethods = await _paymentMethodRepository.GetPaymentMethodByName(paymentMethod.ToString()!);
             if (paymentMethods == null)
             {
@@ -172,11 +170,12 @@ public class OderService : IOderService
                     new PaymentMethod
                     {
                         account_id = accountId,
-                        payment_method = paymentMethod
+                        payment_method = JsonConvert.SerializeObject(paymentMethod)
                     }
                 );
             }
             Guid paymentMethodId = paymentMethods.id;
+            System.Console.WriteLine(paymentMethodId);
 
             ShippingMethod shippingMethods = await _shippingMethodRepository.GetShippingMethodByName(shippingMethod.ToString()!);
             if (shippingMethods == null)
@@ -190,6 +189,7 @@ public class OderService : IOderService
                 );
             }
             Guid shippingMethodId = shippingMethods.id;
+
             dynamic userInfoResponse = _userStoredInformationRepository.GetUserStoredInformationByValues(accountId: accountId, address: userInfo.address, phone: userInfo.phone, name: userInfo.name);
             if (userInfoResponse == null)
             {

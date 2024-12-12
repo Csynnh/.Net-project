@@ -30,7 +30,7 @@ public class PaymentMethodRepository : IShippingMethodRepository
     string sql = @"
       INSERT INTO DEV.PAYMENTMETHODS (account_id, payment_method)
       VALUES (@account_id, @payment_method::json)
-      RETURNING id, account_id, payment_method;
+      RETURNING id, account_id, payment_method::text;
     ";
     return await connection.QuerySingleAsync<PaymentMethod>(sql, paymentMethod);
   }

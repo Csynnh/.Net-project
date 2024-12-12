@@ -204,4 +204,32 @@ public class ProductController : ControllerBase
             };
         }
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete]
+    [Route("/api/products/{id}")]
+    public async Task<ResponseDto> DeleteProduct([FromRoute] Guid id)
+    {
+        try
+        {
+            HttpContext.Response.StatusCode = 200;
+            _logger.LogInformation($"Deleting a product with id: {id}");
+            await _productService.DeleteProductAsync(id);
+            return new ResponseDto()
+            {
+                MessageToClient = "Successfully deleted",
+                ResponseData = true
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            HttpContext.Response.StatusCode = 204;
+            return new ResponseDto()
+            {
+                MessageToClient = "An error occurred while deleting the product",
+                ResponseData = false
+            };
+        }
+    }
 }
