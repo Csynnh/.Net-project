@@ -9,7 +9,7 @@ public class CartInQueryResult
 
     public int product_quantity { get; set; }
 
-    public string product_image { get; set; }
+    public string variants { get; set; }
 
     public string product_color { get; set; }
 }
