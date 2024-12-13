@@ -175,7 +175,6 @@ public class OderService : IOderService
                 );
             }
             Guid paymentMethodId = paymentMethods.id;
-            System.Console.WriteLine(paymentMethodId);
 
             ShippingMethod shippingMethods = await _shippingMethodRepository.GetShippingMethodByName(shippingMethod.ToString()!);
             if (shippingMethods == null)
@@ -207,6 +206,7 @@ public class OderService : IOderService
 
                 foreach (var variant in product.variants)
                 {
+                    Console.WriteLine(variant.id);
                     await _invoiceDetailRepository.CreateOderDetail(new OderDetailRequest
                     {
                         order_id = oder.id,

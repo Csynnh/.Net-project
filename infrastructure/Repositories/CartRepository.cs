@@ -39,19 +39,23 @@ public class CartRepository
     public IEnumerable<CartInQueryResult> GetListCart(Guid accountId)
     {
         var sql = $@"
-        select 
+            select
                 c.id ,
                 p.name as product_name,
                 p.price as product_price,
                 c.quantity as product_quantity,
-                json_extract_path_text(pv.images, 'ImageThumbnail') AS product_image,
-                c2.color as product_color
+                c2.color as product_color,
+                jsonb_agg(jsonb_build_object(
+                    'Id', pv.Id,
+                    'Images', pv.Images->>'ImageThumbnail'
+                )) AS Variants
             from DEV.carts c
             left join DEV.accounts a  on a.id = c.account_id
             left join dev.productvariants pv on pv.id = c.product_variant_id
             left join dev.products p on p.id = pv.product_id
             left join dev.colors c2 on pv.color_id = c2.id
-            where c.account_id = @accountId;
+            where c.account_id = @accountId
+            group by c.id, p.name, p.price, c2.color;
         ";
 
         try
