@@ -1,0 +1,7 @@
+namespace infrastructure.EnumVariables
+{
+
+    
+
+
+}
